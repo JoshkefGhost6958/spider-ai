@@ -36,6 +36,7 @@ staticfiles/
 *.log
 *.tmp
 *.bak
+scratch/
 .cache/
 .pytest_cache/
 .coverage

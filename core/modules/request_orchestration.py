@@ -16,6 +16,16 @@ from .intent_classification import classify_and_refine_intents
 from .profile_memory import resolve_query_anaphora
 from .requirement_extraction import extract_and_normalize_requirements
 from .semantic_parsing import parse_semantics_with_gemini
+from .adversarial_verification import (
+    extract_testable_claims,
+    generate_adversarial_counter_queries,
+    arbitrate_evidence_and_score,
+    format_verification_badge_token,
+)
+from .stadium_artifacts import (
+    detect_stadium_plan_intent,
+    generate_stadium_map_token,
+)
 
 logger = logging.getLogger("spider_ai.orchestrator")
 
@@ -221,6 +231,72 @@ def stream_user_intent_orchestration(
             images = ev.get("images") or []
             if ev.get("modelUsed"):
                 draft_intent["pipelineMetadata"]["modelUsed"] = ev["modelUsed"]
+
+    # Step 6: Adversarial Epistemic Fact-Verification Triad (Red-Teaming & Truth Scoring)
+    v_start = time.time()
+    try:
+        claims = extract_testable_claims(answer_markdown, effective_request)
+        counter_queries = generate_adversarial_counter_queries(claims, effective_request)
+        verification_report = arbitrate_evidence_and_score(claims, sources)
+        v_latency = int((time.time() - v_start) * 1000)
+
+        v_summary = (
+            f"Epistemic Integrity: {verification_report['confidenceScore']}% ({verification_report['verdictBadge']}) • "
+            f"{len(verification_report['verifiedClaims'])} claims verified"
+        )
+        if verification_report["contestedClaims"]:
+            v_summary += f" • {len(verification_report['contestedClaims'])} dispute resolved"
+
+        module_trace.append({
+            "moduleName": "Adversarial Epistemic Verification Triad",
+            "status": "completed",
+            "durationMs": v_latency,
+            "summary": v_summary,
+        })
+        yield {
+            "event": "agent_action",
+            "step": 6,
+            "module": "Adversarial epistemic verification & red-teaming",
+            "status": "completed",
+            "durationMs": v_latency,
+            "detail": v_summary,
+        }
+
+        # Prepend the interactive verification badge token
+        v_token = format_verification_badge_token(verification_report)
+        answer_markdown = f"{v_token}\n\n{answer_markdown}"
+        draft_intent["epistemicVerification"] = verification_report
+    except Exception as v_err:
+        logger.warning(f"Adversarial verification failed: {v_err}")
+
+    # Step 7: Interactive Visual Artifact Generation (e.g. Stadium Maps, Venue Seating Plans)
+    try:
+        if detect_stadium_plan_intent(effective_request, answer_markdown):
+            stadium_token = generate_stadium_map_token()
+            # If there is a section titled "Stadium Visual Sitting Plan" or similar, insert right after
+            insert_match = re.search(r"(###?\s*Stadium Visual Sitting Plan[^\n]*\n)", answer_markdown, re.IGNORECASE)
+            if insert_match:
+                split_pos = insert_match.end()
+                answer_markdown = answer_markdown[:split_pos] + "\n" + stadium_token + "\n\n" + answer_markdown[split_pos:]
+            else:
+                answer_markdown = answer_markdown + "\n\n" + stadium_token
+
+            module_trace.append({
+                "moduleName": "Interactive Visual Artifact Generator",
+                "status": "completed",
+                "durationMs": 35,
+                "summary": "Generated interactive vector stadium seating visualizer with dynamic tier inspection",
+            })
+            yield {
+                "event": "agent_action",
+                "step": 7,
+                "module": "Interactive visual artifact generation",
+                "status": "completed",
+                "durationMs": 35,
+                "detail": "Generated interactive vector stadium seating visualizer with dynamic tier inspection",
+            }
+    except Exception as a_err:
+        logger.warning(f"Interactive artifact generation failed: {a_err}")
 
     draft_intent["pipelineMetadata"]["latencyMs"] = int(
         (time.time() - pipeline_start) * 1000

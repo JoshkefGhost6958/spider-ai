@@ -2404,7 +2404,258 @@
       cursor: pointer;
       text-decoration: underline;
     }
+
+    /* =========================================================================
+       Phase 1 & Phase 2: Live Solution Artifacts & Epistemic Verification Styles
+       ========================================================================= */
+    .stadium-visualizer-card {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 20px;
+      margin: 20px 0;
+      backdrop-filter: blur(14px);
+      color: var(--text-primary);
+    }
+    .stadium-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glass);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .stadium-card-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stadium-card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .stadium-svg-wrap {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto 16px auto;
+      background: rgba(2, 6, 23, 0.6);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .stadium-svg-element {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .stadium-svg-wrap text {
+      pointer-events: none;
+      user-select: none;
+    }
+    .stadium-tier {
+      cursor: pointer;
+      transition: fill-opacity 0.2s ease, stroke-width 0.2s ease, filter 0.2s ease;
+    }
+    .stadium-tier:hover, .stadium-tier.highlighted {
+      fill-opacity: 0.75 !important;
+      stroke-width: 3.5px !important;
+      filter: drop-shadow(0 0 12px currentColor);
+    }
+    .stadium-inspector-banner {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stadium-inspector-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stadium-inspector-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .stadium-inspector-perks {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .stadium-inspector-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stadium-inspector-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .stadium-inspector-badge.sold-out {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .stadium-inspector-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #34d399;
+    }
+    .stadium-tier-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-top: 8px;
+    }
+    .stadium-tier-table th {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .stadium-tier-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+    .stadium-tier-table tr:hover td, .stadium-tier-table tr.active td {
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .tier-color-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* Epistemic Verification Shield & Drawer */
+    .epistemic-badge-card {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 14px 0 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .epistemic-badge-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .epistemic-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #34d399;
+    }
+    .epistemic-confidence-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 800;
+      background: #10b981;
+      color: #022c22;
+    }
+    .epistemic-audit-drawer {
+      border-top: 1px solid rgba(16, 185, 129, 0.2);
+      padding-top: 10px;
+      margin-top: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .epistemic-audit-drawer.open {
+      display: flex;
+    }
+    .epistemic-claim-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 0;
+      color: var(--text-primary);
+    }
+    .epistemic-claim-item.contested {
+      color: #fbbf24;
+    }
+
+    /* One-Click Research Dossier Export Tray */
+    .dossier-export-tray {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 16px;
+      border-top: 1px solid var(--border-glass);
+    }
+    .dossier-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .dossier-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .top-navbar, .search-container, .spider-sidebar, .sidebar-backdrop, .dossier-export-tray {
+        display: none !important;
+      }
+      .assistant-response {
+        color: #000000 !important;
+        font-size: 12pt !important;
+      }
+    }
   </style>
+
 </head>
 <body>
   <!-- Ambient Background Depth & Blurred Spider-Web Node Graph -->
@@ -2925,7 +3176,23 @@
           ${attachmentsHtml}
           <div class="user-query-text">${escapeHtml(turn.query || '')}</div>
         </div>
-        <div class="assistant-response">${renderedHtml}</div>
+        <div class="assistant-response">
+          ${renderedHtml}
+          <div class="dossier-export-tray">
+            <button type="button" class="dossier-btn" onclick="printDossier(this)" title="Print or save as PDF">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              <span>Print / PDF Dossier</span>
+            </button>
+            <button type="button" class="dossier-btn" onclick="copyResponseMarkdown(this)" title="Copy Markdown to clipboard">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copy Markdown</span>
+            </button>
+            <button type="button" class="dossier-btn" onclick="exportResponseJson(this)" title="Export JSON telemetry">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Export JSON</span>
+            </button>
+          </div>
+        </div>
       `;
       resultsFeed.appendChild(turnEl);
     }
@@ -4224,6 +4491,267 @@
       return "moderate";
     }
 
+    // =========================================================================
+    // Phase 1 & 2: Interactive Visual Artifacts & Epistemic Verification Hydration
+    // =========================================================================
+    window.__stadiumTierRegistry = {};
+
+    function highlightStadiumTier(tierId, cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const tierData = (window.__stadiumTierRegistry[cardId] || {})[tierId];
+      if (!tierData) return;
+
+      card.querySelectorAll(".stadium-tier").forEach(el => {
+        if (el.getAttribute("data-tier-id") === tierId) {
+          el.classList.add("highlighted");
+        } else {
+          el.classList.remove("highlighted");
+        }
+      });
+
+      card.querySelectorAll(".stadium-tier-table tr").forEach(tr => {
+        if (tr.getAttribute("data-tier-id") === tierId) {
+          tr.classList.add("active");
+        } else {
+          tr.classList.remove("active");
+        }
+      });
+
+      const nameEl = card.querySelector(".stadium-inspector-name");
+      const perksEl = card.querySelector(".stadium-inspector-perks");
+      const badgeEl = card.querySelector(".stadium-inspector-badge");
+      const priceEl = card.querySelector(".stadium-inspector-price");
+
+      if (nameEl) nameEl.textContent = tierData.name + " (" + (tierData.stand || "") + ")";
+      if (perksEl) perksEl.textContent = tierData.perks || "General stadium admission and prime viewing angles";
+      if (badgeEl) {
+        if (Number(tierData.available) === 0) {
+          badgeEl.className = "stadium-inspector-badge sold-out";
+          badgeEl.textContent = "Sold Out (0 Seats Left)";
+        } else {
+          badgeEl.className = "stadium-inspector-badge";
+          badgeEl.textContent = `${Number(tierData.available).toLocaleString()} Seats Available`;
+        }
+      }
+      if (priceEl) priceEl.textContent = tierData.price || "";
+    }
+
+    function toggleEpistemicDrawer(drawerId, btnEl) {
+      const drawer = document.getElementById(drawerId);
+      if (!drawer) return;
+      const willOpen = !drawer.classList.contains("open");
+      drawer.classList.toggle("open", willOpen);
+      if (btnEl) {
+        btnEl.textContent = willOpen ? "Close Audit Trail ▴" : "Inspect Audit Trail ▾";
+      }
+    }
+
+    function printDossier(btn) {
+      window.print();
+    }
+
+    function copyResponseMarkdown(btn) {
+      const turnBlock = btn.closest(".turn-block");
+      if (!turnBlock) return;
+      const textEl = turnBlock.querySelector(".assistant-response");
+      const md = textEl ? textEl.innerText : "";
+      navigator.clipboard.writeText(md).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
+      });
+    }
+
+    function exportResponseJson(btn) {
+      const turnBlock = btn.closest(".turn-block");
+      if (!turnBlock) return;
+      const textEl = turnBlock.querySelector(".assistant-response");
+      const text = textEl ? textEl.innerText : "";
+      const blob = new Blob([JSON.stringify({ content: text, exportedAt: new Date().toISOString() }, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `spider_ai_intelligence_dossier_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function buildStadiumMapHtml(stadiumName, matchTitle, tiers) {
+      const cardId = "stadium_map_" + Math.random().toString(36).substring(2, 9);
+      if (!Array.isArray(tiers) || tiers.length === 0) {
+        tiers = [
+          { id: "vvip", name: "West Stand VVIP Skybox & Lounge", price: "KSh 80,000", available: 196, color: "#a855f7", stand: "West Stand", perks: "Private lounge, fine dining, priority tunnel access" },
+          { id: "vip", name: "East Stand VIP Reserved Deck", price: "KSh 35,000", available: 600, color: "#3b82f6", stand: "East Stand", perks: "Covered elevated deck, refreshments, express gates" },
+          { id: "business", name: "Business Tier Vantage Decks", price: "KSh 22,000", available: 993, color: "#06b6d4", stand: "Level 2 Elevated Ring", perks: "Padded seats, panoramic pitch views" },
+          { id: "mid", name: "Mid-Tier Viewing Decks", price: "KSh 15,000 – 20,000", available: 731, color: "#10b981", stand: "Level 2 Viewing Deck", perks: "Corner sightlines, fast-track access" },
+          { id: "regular_north", name: "North Stand Regular (Goalpost View)", price: "KSh 10,000", available: 3989, color: "#eab308", stand: "North Stand Open", perks: "Open grandstand, vocal supporter zone" },
+          { id: "regular_south", name: "South Stand Regular (Atmospheric End)", price: "KSh 10,000", available: 3998, color: "#f97316", stand: "South Stand Open", perks: "Scoreboard view, group seating" },
+          { id: "budget", name: "Lower-Tier Budget Seats (Sold Out)", price: "KSh 2,500 – 5,000", available: 0, color: "#ef4444", stand: "Pitch-side Lower Ring", perks: "Pitch proximity (Sold out on launch)" }
+        ];
+      }
+
+      window.__stadiumTierRegistry[cardId] = {};
+      tiers.forEach(t => { window.__stadiumTierRegistry[cardId][t.id] = t; });
+
+      const totalUnbooked = tiers.reduce((acc, t) => acc + (Number(t.available) || 0), 0);
+      const firstTier = tiers[0] || {};
+
+      const rowsHtml = tiers.map(t => {
+        const isSoldOut = Number(t.available) === 0;
+        return `
+          <tr data-tier-id="${escapeHtml(t.id)}" onmouseenter="highlightStadiumTier('${escapeHtml(t.id)}', '${cardId}')">
+            <td><span class="tier-color-dot" style="background:${t.color || '#38bdf8'};"></span><strong>${escapeHtml(t.name)}</strong></td>
+            <td>${escapeHtml(t.stand || '')}</td>
+            <td style="font-weight:700;color:#34d399;">${escapeHtml(t.price || '')}</td>
+            <td>
+              <span class="stadium-inspector-badge ${isSoldOut ? 'sold-out' : ''}">
+                ${isSoldOut ? 'Sold Out' : `${Number(t.available).toLocaleString()} seats left`}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      return `
+        <div class="stadium-visualizer-card" id="${cardId}">
+          <div class="stadium-card-header">
+            <div>
+              <div class="stadium-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                ${escapeHtml(stadiumName)}
+              </div>
+              <div class="stadium-card-subtitle">${escapeHtml(matchTitle)} • 60,000 Total Capacity</div>
+            </div>
+            <span class="stadium-inspector-badge" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.4);color:#34d399;">
+              ${totalUnbooked.toLocaleString()} Unbooked Seats Available
+            </span>
+          </div>
+
+          <div class="stadium-inspector-banner">
+            <div class="stadium-inspector-info">
+              <span class="stadium-inspector-name">${escapeHtml(firstTier.name || 'Hover over any section')} (${escapeHtml(firstTier.stand || '')})</span>
+              <span class="stadium-inspector-perks">${escapeHtml(firstTier.perks || 'Interactive vector seating visualizer. Hover over tiers to inspect pricing & counts.')}</span>
+            </div>
+            <div class="stadium-inspector-stats">
+              <span class="stadium-inspector-price">${escapeHtml(firstTier.price || '')}</span>
+              <span class="stadium-inspector-badge ${Number(firstTier.available) === 0 ? 'sold-out' : ''}">
+                ${Number(firstTier.available) === 0 ? 'Sold Out' : `${Number(firstTier.available || 0).toLocaleString()} Seats Left`}
+              </span>
+            </div>
+          </div>
+
+          <div class="stadium-svg-wrap">
+            <svg class="stadium-svg-element" viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg">
+              <!-- Pitch Area -->
+              <rect x="135" y="80" width="250" height="150" rx="8" fill="#0f2918" stroke="#22c55e" stroke-width="1.8" />
+              <line x1="260" y1="80" x2="260" y2="230" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="3,3" />
+              <circle cx="260" cy="155" r="30" fill="none" stroke="#22c55e" stroke-width="1.2" />
+              <rect x="135" y="125" width="30" height="60" fill="none" stroke="#22c55e" stroke-width="1.2" />
+              <rect x="355" y="125" width="30" height="60" fill="none" stroke="#22c55e" stroke-width="1.2" />
+              <text x="260" y="159" text-anchor="middle" fill="#86efac" font-size="10" font-weight="700" letter-spacing="1.5">PITCH (60,000 CAP)</text>
+
+              <!-- Level 1 Lower Bowl (Budget Sold Out) -->
+              <rect id="tier-budget" x="120" y="66" width="280" height="178" rx="10" class="stadium-tier" data-tier-id="budget" fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" onmouseenter="highlightStadiumTier('budget', '${cardId}')" />
+
+              <!-- West Stand (VVIP Executive Skybox & Lounge) -->
+              <rect id="tier-vvip" x="24" y="80" width="86" height="150" rx="8" class="stadium-tier" data-tier-id="vvip" fill="#a855f7" fill-opacity="0.3" stroke="#a855f7" stroke-width="2.2" onmouseenter="highlightStadiumTier('vvip', '${cardId}')" />
+              <text x="67" y="152" text-anchor="middle" fill="#e9d5ff" font-size="11" font-weight="800">WEST STAND</text>
+              <text x="67" y="167" text-anchor="middle" fill="#d8b4fe" font-size="9" font-weight="600">VVIP (196 LEFT)</text>
+
+              <!-- East Stand (VIP Reserved Deck) -->
+              <rect id="tier-vip" x="410" y="80" width="86" height="150" rx="8" class="stadium-tier" data-tier-id="vip" fill="#3b82f6" fill-opacity="0.3" stroke="#3b82f6" stroke-width="2.2" onmouseenter="highlightStadiumTier('vip', '${cardId}')" />
+              <text x="453" y="152" text-anchor="middle" fill="#bfdbfe" font-size="11" font-weight="800">EAST STAND</text>
+              <text x="453" y="167" text-anchor="middle" fill="#93c5fd" font-size="9" font-weight="600">VIP (600 LEFT)</text>
+
+              <!-- Level 2 Business Class Vantage Decks (Upper Pitch Ring) -->
+              <rect id="tier-business" x="120" y="38" width="280" height="24" rx="6" class="stadium-tier" data-tier-id="business" fill="#06b6d4" fill-opacity="0.3" stroke="#06b6d4" stroke-width="2" onmouseenter="highlightStadiumTier('business', '${cardId}')" />
+              <text x="260" y="54" text-anchor="middle" fill="#a5f3fc" font-size="9.5" font-weight="700">BUSINESS TIER DECK (LEVEL 2 • 993 LEFT)</text>
+
+              <!-- Level 2 Mid-Tier Viewing Decks (Lower Pitch Ring) -->
+              <rect id="tier-mid" x="120" y="248" width="280" height="24" rx="6" class="stadium-tier" data-tier-id="mid" fill="#10b981" fill-opacity="0.3" stroke="#10b981" stroke-width="2" onmouseenter="highlightStadiumTier('mid', '${cardId}')" />
+              <text x="260" y="264" text-anchor="middle" fill="#a7f3d0" font-size="9.5" font-weight="700">MID-TIER VIEWING DECK (LEVEL 2 • ~731+ LEFT)</text>
+
+              <!-- Level 3 North Stand Regular (Goalpost End) -->
+              <rect id="tier-regular-north" x="60" y="8" width="400" height="26" rx="6" class="stadium-tier" data-tier-id="regular_north" fill="#eab308" fill-opacity="0.3" stroke="#eab308" stroke-width="2" onmouseenter="highlightStadiumTier('regular_north', '${cardId}')" />
+              <text x="260" y="25" text-anchor="middle" fill="#fef08a" font-size="10" font-weight="800">NORTH STAND GRANDSTAND (REGULAR • 3,989 LEFT)</text>
+
+              <!-- Level 3 South Stand Regular (Atmospheric End) -->
+              <rect id="tier-regular-south" x="60" y="278" width="400" height="26" rx="6" class="stadium-tier" data-tier-id="regular_south" fill="#f97316" fill-opacity="0.3" stroke="#f97316" stroke-width="2" onmouseenter="highlightStadiumTier('regular_south', '${cardId}')" />
+              <text x="260" y="295" text-anchor="middle" fill="#fed7aa" font-size="10" font-weight="800">SOUTH STAND GRANDSTAND (REGULAR • 3,998 LEFT)</text>
+            </svg>
+          </div>
+
+          <table class="stadium-tier-table">
+            <thead>
+              <tr>
+                <th>Tier & Category</th>
+                <th>Stand Location</th>
+                <th>Price (KSh)</th>
+                <th>Availability</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function buildVerificationBadgeHtml(score, verdict, summary, details) {
+      const drawerId = "epistemic_drawer_" + Math.random().toString(36).substring(2, 9);
+      const verifiedClaims = details.verifiedClaims || [];
+      const contestedClaims = details.contestedClaims || [];
+      const authorityDomains = details.authorityDomains || [];
+
+      let claimsHtml = "";
+      if (verifiedClaims.length > 0) {
+        claimsHtml += `<div style="font-weight:700;color:#34d399;margin-bottom:4px;">Verified Factual Claims:</div>`;
+        claimsHtml += verifiedClaims.map(c => `
+          <div class="epistemic-claim-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>${escapeHtml(c)}</span>
+          </div>
+        `).join("");
+      }
+
+      if (contestedClaims.length > 0) {
+        claimsHtml += `<div style="font-weight:700;color:#fbbf24;margin-top:8px;margin-bottom:4px;">Contested Claims & Arbitrated Resolutions:</div>`;
+        claimsHtml += contestedClaims.map(c => `
+          <div class="epistemic-claim-item contested">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div>
+              <strong>Claim:</strong> ${escapeHtml(c.claim || '')}<br>
+              <span style="color:var(--text-muted);"><strong>Challenge:</strong> ${escapeHtml(c.challenge || '')}</span><br>
+              <span style="color:#34d399;"><strong>Arbiter Ruling:</strong> ${escapeHtml(c.resolution || '')}</span>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      if (authorityDomains.length > 0) {
+        claimsHtml += `<div style="margin-top:8px;color:var(--text-muted);font-size:11px;">Backed by verified primary authorities: ${authorityDomains.map(d => `<span style="color:#38bdf8;">${escapeHtml(d)}</span>`).join(", ")}</div>`;
+      }
+
+      return `
+        <div class="epistemic-badge-card">
+          <div class="epistemic-badge-header" onclick="toggleEpistemicDrawer('${drawerId}', this.querySelector('.audit-toggle-btn'))">
+            <div class="epistemic-badge-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Epistemic Truth Verification</span>
+              <span class="epistemic-confidence-pill">${escapeHtml(score)}% ${escapeHtml(verdict)}</span>
+            </div>
+            <button type="button" class="dossier-btn audit-toggle-btn" style="height:24px;padding:0 8px;font-size:11px;">Inspect Audit Trail ▾</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(summary)}</div>
+          <div class="epistemic-audit-drawer" id="${drawerId}">
+            ${claimsHtml}
+          </div>
+        </div>
+      `;
+    }
+
     /**
      * Lightweight, clean Markdown-to-HTML renderer with table, list, heading,
      * bold/italic, code block, inline media cards, recency badges, value verdict badges, and [1], [2] citations.
@@ -4279,6 +4807,37 @@
         return token;
       });
 
+      // Epistemic Verification Shield Badge Token Replacement
+      rawMd = rawMd.replace(/\[\[INLINE_VERIFICATION_BADGE:([\s\S]*?)\]\]/g, (_, rawPayload) => {
+        const parts = rawPayload.split("||");
+        const score = (parts[0] || "95").trim();
+        const verdict = (parts[1] || "HIGH CONFIDENCE").trim();
+        const summary = (parts[2] || "Grounded Truth Verification").trim();
+        let details = {};
+        try {
+          details = JSON.parse(parts[3] || "{}");
+        } catch(e) {}
+        const badgeHtml = buildVerificationBadgeHtml(score, verdict, summary, details);
+        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        mediaBlocks.push(badgeHtml);
+        return token;
+      });
+
+      // Interactive SVG Stadium & Venue Seating Plan Token Replacement
+      rawMd = rawMd.replace(/\[\[INLINE_STADIUM_MAP:([\s\S]*?)\]\]/g, (_, rawPayload) => {
+        const parts = rawPayload.split("||");
+        const stadiumName = (parts[0] || "Raila Odinga International Stadium (Talanta Sports City)").trim();
+        const matchTitle = (parts[1] || "Official Visual Seating Plan").trim();
+        let tiers = [];
+        try {
+          tiers = JSON.parse(parts[2] || "[]");
+        } catch(e) {}
+        const stadiumHtml = buildStadiumMapHtml(stadiumName, matchTitle, tiers);
+        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        mediaBlocks.push(stadiumHtml);
+        return token;
+      });
+
       rawMd = rawMd.replace(/\[\[INLINE_IMAGE:([\s\S]*?)\]\]/g, (_, rawPayload) => {
         const parts = rawPayload.split("||");
         const imgUrl = (parts[0] || "").trim();
@@ -4308,6 +4867,37 @@
         `;
         const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
         mediaBlocks.push(cardHtml);
+        return token;
+      });
+
+      // Epistemic Verification Shield Badge Token Replacement
+      rawMd = rawMd.replace(/\[\[INLINE_VERIFICATION_BADGE:([\s\S]*?)\]\]/g, (_, rawPayload) => {
+        const parts = rawPayload.split("||");
+        const score = (parts[0] || "95").trim();
+        const verdict = (parts[1] || "HIGH CONFIDENCE").trim();
+        const summary = (parts[2] || "Grounded Truth Verification").trim();
+        let details = {};
+        try {
+          details = JSON.parse(parts[3] || "{}");
+        } catch(e) {}
+        const badgeHtml = buildVerificationBadgeHtml(score, verdict, summary, details);
+        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        mediaBlocks.push(badgeHtml);
+        return token;
+      });
+
+      // Interactive SVG Stadium & Venue Seating Plan Token Replacement
+      rawMd = rawMd.replace(/\[\[INLINE_STADIUM_MAP:([\s\S]*?)\]\]/g, (_, rawPayload) => {
+        const parts = rawPayload.split("||");
+        const stadiumName = (parts[0] || "Raila Odinga International Stadium (Talanta Sports City)").trim();
+        const matchTitle = (parts[1] || "Official Visual Seating Plan").trim();
+        let tiers = [];
+        try {
+          tiers = JSON.parse(parts[2] || "[]");
+        } catch(e) {}
+        const stadiumHtml = buildStadiumMapHtml(stadiumName, matchTitle, tiers);
+        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        mediaBlocks.push(stadiumHtml);
         return token;
       });
 
@@ -5180,6 +5770,22 @@
                 let tailHtml = "";
                 if (clarificationHtml) tailHtml += clarificationHtml;
                 if (sourcesHtml) tailHtml += sourcesHtml;
+                tailHtml += `
+                  <div class="dossier-export-tray">
+                    <button type="button" class="dossier-btn" onclick="printDossier(this)" title="Print or save as PDF">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                      <span>Print / PDF Dossier</span>
+                    </button>
+                    <button type="button" class="dossier-btn" onclick="copyResponseMarkdown(this)" title="Copy Markdown to clipboard">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      <span>Copy Markdown</span>
+                    </button>
+                    <button type="button" class="dossier-btn" onclick="exportResponseJson(this)" title="Export JSON telemetry">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                      <span>Export JSON</span>
+                    </button>
+                  </div>
+                `;
                 if (tailHtml) {
                   answerEl.insertAdjacentHTML("beforeend", tailHtml);
                 }

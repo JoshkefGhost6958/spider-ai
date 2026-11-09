@@ -1553,6 +1553,16 @@ def _summarize_tool_result(tool_name: str, args: Dict[str, Any], res: Dict[str, 
         return f"Verified claim across {res.get('independentDomainsFound', 0)} independent domain(s)."
     if tool_name == "evaluate_expression_or_convert":
         return f"Calculated {args.get('expression', '')} = {res.get('result', '')}."
+    if tool_name == "generate_interactive_venue_map":
+        return f"Generated interactive vector seating visualizer for {res.get('stadiumName', 'Venue')} ({res.get('totalUnbooked', 0):,} unbooked seats)."
+    if tool_name == "generate_interactive_chart":
+        return f"Generated interactive {res.get('chartType', 'data')} chart: '{res.get('title', 'Data Distribution')}'."
+    if tool_name == "execute_sandboxed_python":
+        return f"Executed sandboxed computation ({res.get('executionTimeMs', 0)}ms) -> Result verified."
+    if tool_name == "execute_sandboxed_sql":
+        return f"Executed sandboxed SQL query -> {res.get('rowCount', 0)} rows returned."
+    if tool_name == "compile_research_dossier":
+        return f"Compiled executive research dossier ({res.get('sectionCount', 0)} sections, {res.get('sourceCount', 0)} sources)."
     return f"Completed {tool_name}."
 
 

@@ -44,6 +44,13 @@ from .screenshot_tools import (
     capture_page_screenshot,
     compare_website_designs,
 )
+from .live_solution_tools import (
+    generate_interactive_venue_map,
+    generate_interactive_chart,
+    execute_sandboxed_python,
+    execute_sandboxed_sql,
+    compile_research_dossier,
+)
 
 # Gemini Function Calling Tool Declarations (REST API format)
 GEMINI_FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
@@ -430,6 +437,68 @@ GEMINI_FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
             "required": ["urls_or_domains"],
         },
     },
+    {
+        "name": "generate_interactive_venue_map",
+        "description": "Generates a live interactive vector SVG seating layout for sports stadiums, arenas, or theaters. Allows users to visually hover/inspect unbooked seats per tier, prices in KSh, and seating perks.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "stadium_name": {"type": "STRING", "description": "Venue name (e.g. 'Raila Odinga International Stadium (Talanta Sports City)')."},
+                "match_title": {"type": "STRING", "description": "Event/Match title (e.g. 'Bayern Munich vs Ajax Exhibition Match')."},
+            },
+            "required": ["stadium_name", "match_title"],
+        },
+    },
+    {
+        "name": "generate_interactive_chart",
+        "description": "Generates an interactive Chart.js visualization (bar, doughnut, line) for price comparisons, seat allocations, or benchmarks.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "chart_type": {"type": "STRING", "description": "'bar', 'doughnut', or 'line'."},
+                "title": {"type": "STRING", "description": "Chart title."},
+                "labels": {"type": "ARRAY", "items": {"type": "STRING"}, "description": "Categories or series labels."},
+                "datasets": {"type": "ARRAY", "items": {"type": "OBJECT"}, "description": "Datasets containing label, data array, and backgroundColor."},
+            },
+            "required": ["chart_type", "title", "labels", "datasets"],
+        },
+    },
+    {
+        "name": "execute_sandboxed_python",
+        "description": "Executes isolated Python computations for math, data transformations, ticket yields, or statistical modeling in a safe sandbox.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "code": {"type": "STRING", "description": "Safe Python script to execute."},
+            },
+            "required": ["code"],
+        },
+    },
+    {
+        "name": "execute_sandboxed_sql",
+        "description": "Executes read-only SQL queries over in-memory datasets or extracted tables.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "query": {"type": "STRING", "description": "SELECT SQL query string."},
+                "table_name": {"type": "STRING", "description": "Table name."},
+            },
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "compile_research_dossier",
+        "description": "Assembles verified intelligence findings, structured tables, and citations into an exportable research dossier.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "title": {"type": "STRING", "description": "Dossier title."},
+                "summary": {"type": "STRING", "description": "Executive summary."},
+                "sections": {"type": "ARRAY", "items": {"type": "OBJECT"}, "description": "List of sections with 'title' and 'content'."},
+            },
+            "required": ["title", "summary", "sections"],
+        },
+    },
 ]
 
 
@@ -596,6 +665,39 @@ def execute_agent_tool(
         return compare_website_designs(
             urls_or_domains=args.get("urls_or_domains") or [],
             industry_category=args.get("industry_category"),
+        )
+    if tool_name == "generate_interactive_venue_map":
+        return generate_interactive_venue_map(
+            stadium_name=args.get("stadium_name", "Raila Odinga International Stadium (Talanta Sports City)"),
+            match_title=args.get("match_title", "Bayern Munich vs Ajax"),
+            tiers_data=args.get("tiers_data"),
+        )
+    if tool_name == "generate_interactive_chart":
+        return generate_interactive_chart(
+            chart_type=args.get("chart_type", "bar"),
+            title=args.get("title", "Interactive Data Chart"),
+            labels=args.get("labels") or [],
+            datasets=args.get("datasets") or [],
+            options=args.get("options"),
+        )
+    if tool_name == "execute_sandboxed_python":
+        return execute_sandboxed_python(
+            code=args.get("code", ""),
+            timeout_seconds=args.get("timeout_seconds", 3.0),
+        )
+    if tool_name == "execute_sandboxed_sql":
+        return execute_sandboxed_sql(
+            query=args.get("query", ""),
+            table_name=args.get("table_name", "dataset"),
+            columns=args.get("columns"),
+            rows=args.get("rows"),
+        )
+    if tool_name == "compile_research_dossier":
+        return compile_research_dossier(
+            title=args.get("title", "Spider AI Intelligence Brief"),
+            summary=args.get("summary", ""),
+            sections=args.get("sections") or [],
+            sources=args.get("sources") or [],
         )
 
     return {"error": f"Unknown tool: {tool_name}"}

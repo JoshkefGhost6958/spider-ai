@@ -2588,6 +2588,96 @@
       color: #ffffff;
     }
 
+    /* In-App One-Stop Search Portal Link */
+    .in-app-portal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      vertical-align: baseline;
+      margin: 2px 2px;
+    }
+    .in-app-portal-link:hover {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: rgba(56, 189, 248, 0.65);
+      color: #7dd3fc;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
+    }
+
+    /* In-App Web Browser Toolbar & Live View */
+    .in-app-browser-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 12.5px;
+    }
+    .in-app-browser-url {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .in-app-browser-frame-wrap {
+      width: 100%;
+      height: 65vh;
+      min-height: 480px;
+      background: #020617;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border-glass);
+    }
+    .in-app-browser-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #ffffff;
+    }
+    .in-app-frame-shield {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 10;
+    }
+    .frame-shield-card {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid var(--border-glass-bright);
+      border-radius: 14px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
     /* Epistemic Verification Shield & Drawer */
     .epistemic-badge-card {
       background: rgba(16, 185, 129, 0.08);
@@ -4746,10 +4836,10 @@
                 Open the official ticketing portal in your browser to select individual seats and pay via M-Pesa.
               </div>
             </div>
-            <a href="${escapeHtml(portalUrl)}" target="_blank" rel="noopener noreferrer" class="stadium-portal-launch-btn" title="Open official live seating portal in new tab">
+            <button type="button" onclick="openInAppWebBrowser('${escapeHtml(portalUrl).replace(/'/g, "\\'")}', 'Live Seat Selection Portal — Talanta Sports City')" class="stadium-portal-launch-btn" title="Open live seating portal inside Spider AI">
               <span>Open Live Seat Selector</span>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-            </a>
+            </button>
           </div>
         </div>
       `;
@@ -5363,6 +5453,72 @@
       inAppModal.classList.remove("hidden");
     }
 
+    function openInAppWebBrowser(url, title) {
+      if (!url) return;
+      if (inAppModalCard) {
+        inAppModalCard.classList.remove("is-video");
+        resetInAppModalPosition();
+      }
+      inAppModal.classList.remove("minimized");
+      inAppModal.classList.remove("hidden");
+      inAppModalTitle.textContent = title || "In-App Browser";
+      inAppModalExt.href = url;
+      inAppModalExt.textContent = "Open in separate tab ↗";
+
+      let cleanDomain = "portal";
+      try {
+        cleanDomain = (new URL(url, window.location.href)).hostname || "portal";
+      } catch(e) {}
+
+      inAppModalBody.innerHTML = `
+        <div class="in-app-browser-toolbar">
+          <div class="in-app-browser-url">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>${escapeHtml(url)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" class="dossier-btn" style="height:26px;padding:0 10px;font-size:11.5px;" onclick="reloadInAppIframe()">↻ Reload</button>
+            <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="dossier-btn" style="height:26px;padding:0 10px;font-size:11.5px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">New Tab ↗</a>
+          </div>
+        </div>
+        <div class="in-app-browser-frame-wrap" id="in-app-frame-wrap">
+          <iframe id="in-app-browser-iframe" src="${escapeHtml(url)}" class="in-app-browser-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div id="in-app-frame-shield" class="in-app-frame-shield hidden">
+            <div class="frame-shield-card">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <div style="font-weight:700;color:var(--text-primary);font-size:14px;margin-top:6px;">Frame-Restricted Destination</div>
+              <div style="font-size:12.5px;color:var(--text-muted);margin:4px 0 14px 0;max-width:380px;">
+                <strong>${escapeHtml(cleanDomain)}</strong> restricts direct iframe embedding via <code>X-Frame-Options: SAMEORIGIN</code> or active Cloudflare bot-check queues.
+              </div>
+              <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="stadium-portal-launch-btn">
+                <span>Continue to ${escapeHtml(cleanDomain)} ↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Check if domain is known to send SAMEORIGIN or Cloudflare turnstile
+      const ifr = document.getElementById("in-app-browser-iframe");
+      const shield = document.getElementById("in-app-frame-shield");
+      if (ifr) {
+        if (cleanDomain.includes("talantasportscity") || cleanDomain.includes("twitter") || cleanDomain.includes("x.com")) {
+          setTimeout(() => {
+            if (shield) shield.classList.remove("hidden");
+          }, 4000);
+        }
+      }
+    }
+
+    function reloadInAppIframe() {
+      const ifr = document.getElementById("in-app-browser-iframe");
+      if (ifr && ifr.src) {
+        const s = ifr.src;
+        ifr.src = "";
+        setTimeout(() => { ifr.src = s; }, 80);
+      }
+    }
+
     function openGalleryMedia(mediaIdx) {
       const item = window.__agentMediaRegistry[mediaIdx];
       if (!item) return;
@@ -5422,6 +5578,12 @@
       out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
       // Italic *text*
       out = out.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+
+      // Markdown links [label](url) -> Open inside same UI via in-app browser modal (no external redirects)
+      out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => {
+        return `<a href="${escapeHtml(url)}" onclick="event.preventDefault(); openInAppWebBrowser('${escapeHtml(url).replace(/'/g, "\\'")}', '${escapeHtml(label).replace(/'/g, "\\'")}');" class="in-app-portal-link" title="Open inside Spider AI: ${escapeHtml(label)}"><span>${escapeHtml(label)}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+      });
+
       // Citation brackets [1], [2] or [1, 2] -> Open in-app Source Inspector Modal
       out = out.replace(/\[(\d+(?:,\s*\d+)*)\]/g, (match, numsStr) => {
         return numsStr

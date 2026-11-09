@@ -92,6 +92,38 @@ def extract_testable_claims(answer_markdown: str, user_query: str) -> List[Dict[
                 "matched_value": "status_indicator",
                 "is_critical": True,
             })
+            continue
+
+        # Pattern 4: Structured political, leadership, or policy declarations in bullets
+        if line.strip().startswith(("-", "*", "•")) and ":" in line_clean:
+            prefix, rest = line_clean.split(":", 1)
+            p_clean = prefix.strip().strip("*_#")
+            r_clean = rest.strip()
+            if len(p_clean) >= 3 and len(r_clean) >= 20:
+                claims.append({
+                    "type": "FACTUAL_DEVELOPMENT_DECLARATION",
+                    "statement": f"{p_clean}: {r_clean[:150]}",
+                    "matched_value": p_clean,
+                    "is_critical": False,
+                })
+
+    # Fallback: If no claims matched but text is substantial, extract the top 2-3 salient factual assertions
+    if not claims and len(answer_markdown.strip()) > 100:
+        for line in lines:
+            line_clean = line.strip().strip("-*#").strip()
+            if (
+                len(line_clean) >= 45
+                and not line_clean.startswith(("#", ">", "|", "```", "http", "["))
+                and not any(w in line_clean.lower() for w in ("here are", "below is", "summary", "conclusion"))
+            ):
+                claims.append({
+                    "type": "GROUNDED_TOPICAL_ASSERTION",
+                    "statement": line_clean[:170],
+                    "matched_value": "topical_assertion",
+                    "is_critical": False,
+                })
+                if len(claims) >= 3:
+                    break
 
     # Deduplicate claims while preserving order
     unique_claims: List[Dict[str, Any]] = []
@@ -211,12 +243,14 @@ def format_verification_badge_token(report: Dict[str, Any]) -> str:
     [[INLINE_VERIFICATION_BADGE:score||verdict||summary||details_json]]
     """
     score = str(report.get("confidenceScore", 95))
-    verdict = report.get("verdictBadge", "HIGH CONFIDENCE")
-    summary = report.get("summary", "Grounded Truth Verification")
-    details_json = json.dumps({
+    verdict = str(report.get("verdictBadge", "HIGH CONFIDENCE")).replace("||", " ").strip()
+    summary = str(report.get("summary", "Grounded Truth Verification")).replace("||", " - ").strip()
+    details_dict = {
         "verifiedClaims": report.get("verifiedClaims", []),
         "contestedClaims": report.get("contestedClaims", []),
         "authorityDomains": report.get("authorityDomains", []),
         "auditTimestamp": report.get("auditTimestamp", ""),
-    })
-    return f"[[INLINE_VERIFICATION_BADGE:{score}||{verdict}||{summary}||{details_json}]]"
+    }
+    details_json = json.dumps(details_dict, ensure_ascii=False)
+    compact_json = re.sub(r"\s+", " ", details_json).strip()
+    return f"[[INLINE_VERIFICATION_BADGE:{score}||{verdict}||{summary}||{compact_json}]]"

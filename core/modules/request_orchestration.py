@@ -262,9 +262,10 @@ def stream_user_intent_orchestration(
             "detail": v_summary,
         }
 
-        # Prepend the interactive verification badge token
-        v_token = format_verification_badge_token(verification_report)
-        answer_markdown = f"{v_token}\n\n{answer_markdown}"
+        # Prepend the interactive verification badge token if claims were evaluated
+        if verification_report.get("verifiedClaims") or verification_report.get("contestedClaims"):
+            v_token = format_verification_badge_token(verification_report)
+            answer_markdown = f"{v_token}\n\n{answer_markdown}"
         draft_intent["epistemicVerification"] = verification_report
     except Exception as v_err:
         logger.warning(f"Adversarial verification failed: {v_err}")

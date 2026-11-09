@@ -64,6 +64,7 @@ FOLLOWUP_ASPECTS = re.compile(
     r"food|drinks|beverages|parking|transit|bus|shuttle|rules|security|allowed|prohibited|age|child|adult|"
     r"rules?|format|channel|tv|broadcast|stream|streaming|airing|live|highlights|score|result|results|"
     r"winner|odds|predictions?|stats|statistics|h2h|head\s+to\s+head|details|facts|history|attendance|"
+    r"visual\s+imagery|imagery|visuals?|photos?|pictures?|gallery|images?|footage|videos?|tours?|sitting\s+map|seating\s+map|stadium\s+map|map|maps?|"
     r"which\s+ones?|how\s+many|how\s+much|who\s+all|any\s+(?:free|left|available)|are\s+there)\b",
     re.I,
 )
@@ -377,7 +378,8 @@ def resolve_query_anaphora(
             if len(tokens) <= 4 and any(cue in q_lower for cue in [
                 "course", "syllabus", "intro", "introductory", "fees", "cost", "rates",
                 "pricing", "history", "origin", "overview", "admission", "requirements",
-                "eligibility", "explain", "details"
+                "eligibility", "explain", "details", "visual imagery", "imagery", "images",
+                "visuals", "photos", "pictures", "gallery", "sitting map", "seating map", "map"
             ]):
                 resolved = f"{resolved.rstrip('.?!')} on {target_phrase}"
                 matched = True

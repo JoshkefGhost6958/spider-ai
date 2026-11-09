@@ -41,6 +41,22 @@ HIGH_AUTHORITY_DOMAINS = [
 ]
 
 
+def _clean_claim_statement(stmt: str) -> str:
+    """Cleans up raw markdown table syntax or excessive punctuation into natural claims."""
+    s = stmt.strip()
+    if s.startswith("|") and s.endswith("|"):
+        # Table row: e.g. "| Premium / Mid-Tier | KSh 15,000 | 731 seats | Elevated views ... |"
+        cells = [c.strip() for c in s.split("|") if c.strip()]
+        if len(cells) >= 3:
+            tier_name = cells[0]
+            price = cells[1]
+            avail = cells[2]
+            return f"{tier_name} ({price}): {avail}"
+        elif len(cells) == 2:
+            return f"{cells[0]}: {cells[1]}"
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def extract_testable_claims(answer_markdown: str, user_query: str) -> List[Dict[str, Any]]:
     """
     Extracts key testable factual and numerical claims from the synthesized response.
@@ -63,7 +79,7 @@ def extract_testable_claims(answer_markdown: str, user_query: str) -> List[Dict[
         if qty_match:
             claims.append({
                 "type": "QUANTITATIVE_AVAILABILITY",
-                "statement": line_clean[:180],
+                "statement": _clean_claim_statement(line_clean)[:180],
                 "matched_value": qty_match.group(0),
                 "is_critical": True,
             })
@@ -78,7 +94,7 @@ def extract_testable_claims(answer_markdown: str, user_query: str) -> List[Dict[
         if price_match:
             claims.append({
                 "type": "FINANCIAL_PRICING",
-                "statement": line_clean[:180],
+                "statement": _clean_claim_statement(line_clean)[:180],
                 "matched_value": price_match.group(0),
                 "is_critical": True,
             })
@@ -88,7 +104,7 @@ def extract_testable_claims(answer_markdown: str, user_query: str) -> List[Dict[
         if re.search(r"\b(sold out|all booked|out of stock|postponed|cancelled)\b", line_clean, re.IGNORECASE):
             claims.append({
                 "type": "AVAILABILITY_STATUS",
-                "statement": line_clean[:180],
+                "statement": _clean_claim_statement(line_clean)[:180],
                 "matched_value": "status_indicator",
                 "is_critical": True,
             })

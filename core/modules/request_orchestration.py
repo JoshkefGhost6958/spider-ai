@@ -274,11 +274,25 @@ def stream_user_intent_orchestration(
     try:
         if detect_stadium_plan_intent(effective_request, answer_markdown):
             stadium_token = generate_stadium_map_token()
-            # If there is a section titled "Stadium Visual Sitting Plan" or similar, insert right after
-            insert_match = re.search(r"(###?\s*Stadium Visual Sitting Plan[^\n]*\n)", answer_markdown, re.IGNORECASE)
+            is_explicit_map_request = any(
+                k in effective_request.lower()
+                for k in ["sitting map", "seating map", "sitting plan", "seating plan", "stadium map", "venue map", "ticket sitting map", "show me"]
+            )
+            # If there is a section matching seating architecture/layout/plan, insert right after
+            insert_match = re.search(
+                r"(###?\s*(?:Stadium|Venue|Visual|Interactive|Seating|Sitting|Ticket)[^\n]*(?:Plan|Architecture|Breakdown|Map|Layout)[^\n]*\n)",
+                answer_markdown,
+                re.IGNORECASE,
+            )
             if insert_match:
                 split_pos = insert_match.end()
                 answer_markdown = answer_markdown[:split_pos] + "\n" + stadium_token + "\n\n" + answer_markdown[split_pos:]
+            elif is_explicit_map_request:
+                first_para = answer_markdown.find("\n\n")
+                if first_para != -1 and first_para < 800:
+                    answer_markdown = answer_markdown[:first_para] + "\n\n" + stadium_token + "\n\n" + answer_markdown[first_para:]
+                else:
+                    answer_markdown = stadium_token + "\n\n" + answer_markdown
             else:
                 answer_markdown = answer_markdown + "\n\n" + stadium_token
 

@@ -4821,7 +4821,7 @@
           details = JSON.parse(rawDetails || "{}");
         } catch(e) {}
         const badgeHtml = buildVerificationBadgeHtml(score, verdict, summary, details);
-        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        const token = `@@INLINEVERIFICATIONBADGE${mediaBlocks.length}@@`;
         mediaBlocks.push(badgeHtml);
         return token;
       });
@@ -4837,7 +4837,7 @@
           tiers = JSON.parse(rawTiers || "[]");
         } catch(e) {}
         const stadiumHtml = buildStadiumMapHtml(stadiumName, matchTitle, tiers);
-        const token = `@@INLINEMEDIACARD${mediaBlocks.length}@@`;
+        const token = `@@INLINESTADIUMMAP${mediaBlocks.length}@@`;
         mediaBlocks.push(stadiumHtml);
         return token;
       });
@@ -4910,10 +4910,10 @@
           const gToken = `@@EMBEDDEDGALLERYCARD${mediaBlocks.length}@@`;
           mediaBlocks.push(galleryHtml);
 
-          // Place the gallery right after the opening paragraph/section if possible, or at end
-          const firstPara = rawMd.indexOf("\n\n");
-          if (firstPara > 40 && firstPara < 800) {
-            rawMd = rawMd.slice(0, firstPara) + "\n\n" + gToken + "\n\n" + rawMd.slice(firstPara);
+          // Place the gallery right after the verification badge or opening paragraph, or at end
+          const firstDoubleNl = rawMd.indexOf("\n\n");
+          if (firstDoubleNl > 0 && firstDoubleNl < 1000) {
+            rawMd = rawMd.slice(0, firstDoubleNl) + "\n\n" + gToken + "\n\n" + rawMd.slice(firstDoubleNl + 2);
           } else {
             rawMd = rawMd + "\n\n" + gToken + "\n\n";
           }
@@ -4998,7 +4998,7 @@
           if (trimmed.startsWith("<pre>") || trimmed.startsWith('<div class="table-wrap">')) {
             return trimmed;
           }
-          if (trimmed.startsWith("@@INLINEMEDIACARD") || trimmed.startsWith("@@EMBEDDEDGALLERYCARD")) {
+          if (trimmed.startsWith("@@INLINE") || trimmed.startsWith("@@EMBEDDED")) {
             return trimmed;
           }
 
@@ -5053,6 +5053,10 @@
           return htmlChunk;
         })
         .join("\n")
+        .replace(/<p>\s*@@INLINEVERIFICATIONBADGE(\d+)@@\s*<\/p>/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
+        .replace(/@@INLINEVERIFICATIONBADGE(\d+)@@/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
+        .replace(/<p>\s*@@INLINESTADIUMMAP(\d+)@@\s*<\/p>/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
+        .replace(/@@INLINESTADIUMMAP(\d+)@@/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
         .replace(/<p>\s*@@INLINEMEDIACARD(\d+)@@\s*<\/p>/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
         .replace(/@@INLINEMEDIACARD(\d+)@@/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")
         .replace(/<p>\s*@@EMBEDDEDGALLERYCARD(\d+)@@\s*<\/p>/g, (_, idxStr) => mediaBlocks[parseInt(idxStr, 10)] || "")

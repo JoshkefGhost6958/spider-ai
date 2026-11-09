@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from .browser_tools import (
     StatefulDomBrowserSession,
     browser_capture_screenshot,
@@ -34,6 +34,8 @@ from .verification_tools import (
 )
 from .video_tools import (
     extract_video_info,
+    transcribe_media_audio,
+    verify_video_content_relevance,
     video_search,
 )
 from .image_tools import (
@@ -334,6 +336,31 @@ GEMINI_FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
         },
     },
     {
+        "name": "verify_video_content_relevance",
+        "description": "Investigates and verifies whether the residing spoken dialogue and content of a video actually match the topic or research query. Transcribes audio, detects clickbait/off-topic deception, computes relevance score (0-100), and returns an actionable verdict ('SUGGEST' vs 'DO_NOT_SUGGEST') before presenting videos to the user.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "video_url": {"type": "STRING", "description": "YouTube or web video URL to verify."},
+                "topic_query": {"type": "STRING", "description": "Research topic, question, or claim to verify against the video's residing spoken content."},
+                "min_relevance_score": {"type": "INTEGER", "description": "Minimum required relevance threshold (0-100, default 65)."},
+            },
+            "required": ["video_url", "topic_query"],
+        },
+    },
+    {
+        "name": "transcribe_media_audio",
+        "description": "Extracts and transcribes spoken audio dialogue and keywords from YouTube videos, web media, or local audio files. Employs caption inspection with Gemini multimodal audio fallback.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "source_url_or_path": {"type": "STRING", "description": "YouTube URL, audio/video web link, or local media file path to transcribe."},
+                "max_duration_sec": {"type": "INTEGER", "description": "Maximum seconds of audio to sample/transcribe (default 90)."},
+            },
+            "required": ["source_url_or_path"],
+        },
+    },
+    {
         "name": "image_search",
         "description": "Searches for relevant high-resolution web images and news photography matching the query.",
         "parameters": {
@@ -505,10 +532,12 @@ GEMINI_FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
 def execute_agent_tool(
     tool_name: str,
     args: Dict[str, Any],
-    browser_session: StatefulDomBrowserSession,
+    browser_session: Optional[StatefulDomBrowserSession] = None,
 ) -> Dict[str, Any]:
     """Dispatches a Gemini function call to the corresponding tool implementation."""
     args = args or {}
+    if tool_name.startswith("browser_") and browser_session is None:
+        browser_session = StatefulDomBrowserSession()
     if tool_name == "web_search":
         return web_search(
             query=args.get("query", ""),
@@ -625,6 +654,17 @@ def execute_agent_tool(
             video_url=args.get("video_url", ""),
             focus_query=args.get("focus_query"),
             include_timestamps=args.get("include_timestamps", True),
+        )
+    if tool_name == "verify_video_content_relevance":
+        return verify_video_content_relevance(
+            video_url=args.get("video_url", ""),
+            topic_query=args.get("topic_query", ""),
+            min_relevance_score=args.get("min_relevance_score", 65),
+        )
+    if tool_name == "transcribe_media_audio":
+        return transcribe_media_audio(
+            source_url_or_path=args.get("source_url_or_path", ""),
+            max_duration_sec=args.get("max_duration_sec", 90),
         )
     if tool_name == "image_search":
         return image_search(

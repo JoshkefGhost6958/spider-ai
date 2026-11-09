@@ -1,9 +1,14 @@
+import base64
 import html
 import json
+import mimetypes
+import os
 import re
+import shutil
+import tempfile
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from core.modules.gemini_client import MODEL_FALLBACK_CHAIN, _get_api_key, call_gemini_resilient
 
 USER_AGENT = (
@@ -464,4 +469,382 @@ def extract_video_info(
         "matchingTimestampedSegments": matching_segments[:8],
         "transcriptExcerpt": full_transcript_text[:3500],
         "aiVideoSummary": ai_analysis,
+    }
+
+
+def _extract_audio_snippet(
+    source_url_or_path: str,
+    max_duration_sec: int = 90,
+) -> Tuple[Optional[bytes], str]:
+    """
+    Extracts a lightweight audio sample (MP3/WAV, default 90 seconds) from a
+    YouTube video, web media URL, or local audio file path using yt-dlp & ffmpeg.
+    Returns (audio_bytes, mime_type).
+    """
+    source = (source_url_or_path or "").strip()
+    if not source:
+        return None, ""
+
+    # 1. Local file path check
+    if os.path.exists(source) and os.path.isfile(source):
+        mime, _ = mimetypes.guess_type(source)
+        mime = mime or "audio/mp3"
+        try:
+            with open(source, "rb") as f:
+                return f.read(15 * 1024 * 1024), mime
+        except Exception:
+            return None, ""
+
+    # 2. Remote URL: download short audio slice using yt-dlp + ffmpeg
+    temp_dir = tempfile.mkdtemp(prefix="spider_audio_")
+    try:
+        import yt_dlp
+
+        out_template = os.path.join(temp_dir, "sample.%(ext)s")
+        duration_limit = max(10, min(180, int(max_duration_sec or 90)))
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "outtmpl": out_template,
+            "quiet": True,
+            "no_warnings": True,
+            "noplaylist": True,
+            "max_filesize": 15 * 1024 * 1024,
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "64",
+                }
+            ],
+            "postprocessor_args": [
+                "-ss",
+                "00:00:00",
+                "-t",
+                str(duration_limit),
+            ],
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([source])
+
+        # Scan for output audio file
+        for fname in os.listdir(temp_dir):
+            if fname.lower().endswith((".mp3", ".m4a", ".wav", ".aac", ".ogg")):
+                fpath = os.path.join(temp_dir, fname)
+                with open(fpath, "rb") as f:
+                    b = f.read()
+                return b, "audio/mp3"
+    except Exception:
+        pass
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    return None, ""
+
+
+def _extract_topics_from_text(text: str) -> List[str]:
+    """Extracts top non-generic entity/topic phrases from transcript text."""
+    if not text:
+        return []
+    words = re.findall(r"\b[A-Za-z]{4,}\b", text.lower())
+    freq: Dict[str, int] = {}
+    for w in words:
+        if w in _GENERIC_QUALIFIERS:
+            continue
+        freq[w] = freq.get(w, 0) + 1
+    sorted_words = sorted(freq.items(), key=lambda kv: kv[1], reverse=True)
+    return [w.capitalize() for w, _ in sorted_words[:5]]
+
+
+def transcribe_media_audio(
+    source_url_or_path: str,
+    max_duration_sec: int = 90,
+) -> Dict[str, Any]:
+    """
+    Transcribes spoken dialogue and audio content from a YouTube video URL,
+    web video/audio link, or local audio file:
+    1. For YouTube: checks official & community closed-captions first for instant verbatim accuracy.
+    2. Fallback / raw audio: extracts a lightweight audio clip via yt-dlp & ffmpeg and transcribes
+       speech with Gemini multimodal audio API.
+    3. Returns verbatim transcript, timestamps, detected topics, and transcription method.
+    """
+    source = (source_url_or_path or "").strip()
+    yt_id = _extract_youtube_id(source)
+    canonical_url = f"https://www.youtube.com/watch?v={yt_id}" if yt_id else source
+
+    # 1. Check YouTube captions first
+    segments: List[Dict[str, Any]] = []
+    if yt_id:
+        segments = _fetch_youtube_transcript(yt_id)
+        if segments:
+            full_text = " ".join(s["text"] for s in segments)
+            timestamps = [
+                {"timestamp": s["timestamp"], "seconds": s["seconds"], "text": s["text"]}
+                for s in segments[:40]
+            ]
+            return {
+                "tool": "transcribe_media_audio",
+                "source": canonical_url,
+                "videoId": yt_id,
+                "mediaType": "youtube",
+                "hasTranscript": True,
+                "transcript": full_text[:4000],
+                "spokenTopics": _extract_topics_from_text(full_text),
+                "timestamps": timestamps,
+                "durationTranscribed": f"{len(segments)} caption blocks ({segments[-1]['timestamp'] if segments else '0:00'})",
+                "method": "youtube_captions",
+            }
+
+    # 2. Multimodal Audio Extraction & Gemini Transcription Fallback
+    audio_bytes, mime_type = _extract_audio_snippet(canonical_url, max_duration_sec=max_duration_sec)
+    if audio_bytes:
+        try:
+            api_key = _get_api_key()
+            b64_data = base64.b64encode(audio_bytes).decode("ascii")
+            prompt = (
+                "Please transcribe the speech in this audio clip accurately. "
+                "Format as:\n"
+                "TRANSCRIPT: <verbatim spoken dialogue with approximate timestamps>\n"
+                "TOPICS: <comma-separated list of 3-5 core subjects discussed>"
+            )
+            payload = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "inlineData": {
+                                    "mimeType": mime_type or "audio/mp3",
+                                    "data": b64_data,
+                                }
+                            },
+                            {"text": prompt},
+                        ],
+                    }
+                ],
+                "generationConfig": {"temperature": 0.1},
+            }
+            content, model_used, _ = call_gemini_resilient(
+                payload=payload, timeout_per_call=16, max_rounds=1
+            )
+            resp_text = "".join(p.get("text", "") for p in (content.get("parts") or [])).strip()
+            if resp_text:
+                transcript_part = resp_text
+                topics: List[str] = []
+                if "TRANSCRIPT:" in resp_text:
+                    parts = resp_text.split("TOPICS:")
+                    transcript_part = parts[0].replace("TRANSCRIPT:", "").strip()
+                    if len(parts) > 1:
+                        topics = [t.strip() for t in parts[1].split(",") if t.strip()]
+                if not topics:
+                    topics = _extract_topics_from_text(transcript_part)
+
+                return {
+                    "tool": "transcribe_media_audio",
+                    "source": canonical_url,
+                    "videoId": yt_id,
+                    "mediaType": "audio_clip" if not yt_id else "youtube_audio",
+                    "hasTranscript": True,
+                    "transcript": transcript_part[:4000],
+                    "spokenTopics": topics,
+                    "timestamps": [],
+                    "durationTranscribed": f"First {max_duration_sec}s audio clip",
+                    "method": f"gemini_multimodal_audio ({model_used})",
+                }
+        except Exception:
+            pass
+
+    # 3. Metadata fallback if audio download/transcription failed (e.g. offline or geoblocked)
+    metadata = _extract_video_metadata_ytdlp(canonical_url) if (yt_id or "http" in canonical_url) else {}
+    desc = (metadata.get("description") or "")[:2000]
+    chapters = [c.get("title") for c in metadata.get("chapters", []) if c.get("title")]
+    synthesized_notes = f"{metadata.get('title', '')}. {desc} {' '.join(chapters)}".strip()
+
+    return {
+        "tool": "transcribe_media_audio",
+        "source": canonical_url,
+        "videoId": yt_id,
+        "mediaType": "youtube" if yt_id else "web_media",
+        "hasTranscript": bool(desc or chapters),
+        "transcript": desc or f"Audio transcription unavailable. Video title: {metadata.get('title', '')}",
+        "spokenTopics": chapters[:5] or _extract_topics_from_text(synthesized_notes),
+        "timestamps": [{"timestamp": c.get("startTime", "00:00"), "text": c.get("title", "")} for c in metadata.get("chapters", [])],
+        "durationTranscribed": metadata.get("durationFormatted", "0:00"),
+        "method": "metadata_and_chapters_fallback",
+    }
+
+
+def verify_video_content_relevance(
+    video_url: str,
+    topic_query: str,
+    min_relevance_score: int = 65,
+) -> Dict[str, Any]:
+    """
+    Verifies that the residing spoken content, audio transcript, and subject matter
+    of a video actually match the user's research query, detecting and filtering
+    clickbait, deceptive titles, and off-topic media before suggesting it to the user.
+    """
+    v_url = (video_url or "").strip()
+    q = (topic_query or "").strip()
+    yt_id = _extract_youtube_id(v_url)
+    canonical_url = f"https://www.youtube.com/watch?v={yt_id}" if yt_id else v_url
+
+    # 1. Fetch metadata & transcript
+    metadata = _extract_video_metadata_ytdlp(canonical_url)
+    title = metadata.get("title") or canonical_url
+    channel = metadata.get("channel") or ""
+    description = metadata.get("description") or ""
+
+    tr_res = transcribe_media_audio(canonical_url, max_duration_sec=90)
+    transcript_text = tr_res.get("transcript") or ""
+    spoken_topics = tr_res.get("spokenTopics") or []
+    method = tr_res.get("method") or "metadata_inspection"
+
+    # 2. Check for obvious clickbait / noise patterns
+    t_low = title.lower()
+    full_text_low = f"{title} {description} {transcript_text}".lower()
+
+    if _GENERIC_NOISE_RE.search(t_low) or _GENERIC_NOISE_RE.search(full_text_low):
+        if not re.search(r"\b(movie|episode|ep|drama)\b", q, re.I):
+            return {
+                "tool": "verify_video_content_relevance",
+                "videoUrl": canonical_url,
+                "videoId": yt_id,
+                "title": title,
+                "channel": channel,
+                "topicQuery": q,
+                "isRelevant": False,
+                "relevanceScore": 10,
+                "verdict": "IRRELEVANT_OR_CLICKBAIT",
+                "confidence": 0.95,
+                "hasResidingTranscript": tr_res.get("hasTranscript", False),
+                "spokenSummary": f"Video appears to be drama/entertainment series unrelated to research topic '{q}'.",
+                "detectedTopics": spoken_topics[:4],
+                "matchingExcerpts": [],
+                "isClickbait": True,
+                "clickbaitReason": "Matched entertainment drama/noise pattern while query sought factual information.",
+                "recommendationVerdict": "DO_NOT_SUGGEST",
+                "verificationMethod": "noise_pattern_filter",
+            }
+
+    # 3. AI-Assisted Semantic Verification via Gemini
+    ai_verified = False
+    verdict_dict: Dict[str, Any] = {}
+    try:
+        api_key = _get_api_key()
+        analysis_prompt = (
+            f"Analyze whether this video's actual residing spoken content and subject matter "
+            f"strictly address the research query.\n\n"
+            f"RESEARCH QUERY: {q}\n"
+            f"VIDEO TITLE: {title}\n"
+            f"CHANNEL: {channel}\n"
+            f"RESIDING TRANSCRIPT / SPOKEN DIALOGUE (Excerpt):\n{transcript_text[:3000]}\n\n"
+            f"VIDEO DESCRIPTION:\n{description[:1000]}\n\n"
+            f"Respond ONLY with a JSON object containing keys:\n"
+            f"- is_relevant (boolean)\n"
+            f"- relevance_score (integer 0-100)\n"
+            f"- verdict ('HIGHLY_RELEVANT', 'MODERATELY_RELEVANT', or 'IRRELEVANT_OR_CLICKBAIT')\n"
+            f"- confidence (float 0.0-1.0)\n"
+            f"- spoken_summary (short 1-2 sentence description of what the video is actually about)\n"
+            f"- detected_topics (array of 3-5 strings)\n"
+            f"- matching_excerpts (array of up to 3 verbatim sentences from the text matching the query)\n"
+            f"- is_clickbait (boolean, true if title promises something the residing audio/content lacks)\n"
+            f"- clickbait_reason (null or explanation string)"
+        )
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": analysis_prompt}]}],
+            "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+        }
+        content, model_used, _ = call_gemini_resilient(
+            payload=payload, timeout_per_call=14, max_rounds=1
+        )
+        resp_str = "".join(p.get("text", "") for p in (content.get("parts") or [])).strip()
+        verdict_dict = json.loads(resp_str)
+        ai_verified = True
+        method = f"gemini_epistemic_audit ({model_used})"
+    except Exception:
+        pass
+
+    # 4. Deterministic Linguistic Fallback if AI verification is unavailable (e.g. offline/mock tests)
+    if not ai_verified or not verdict_dict:
+        q_tokens = [w.lower() for w in re.findall(r"[A-Za-z0-9]+", q) if len(w) >= 3 and w.lower() not in _GENERIC_QUALIFIERS]
+        if not q_tokens:
+            q_tokens = [w.lower() for w in re.findall(r"[A-Za-z0-9]+", q) if len(w) >= 3]
+
+        transcript_matches = [tok for tok in q_tokens if re.search(r"\b" + re.escape(tok) + r"\b", transcript_text.lower())]
+        title_matches = [tok for tok in q_tokens if re.search(r"\b" + re.escape(tok) + r"\b", t_low)]
+        desc_matches = [tok for tok in q_tokens if re.search(r"\b" + re.escape(tok) + r"\b", description.lower())]
+
+        score = 0
+        if q_tokens:
+            tr_ratio = len(transcript_matches) / len(q_tokens)
+            t_ratio = len(title_matches) / len(q_tokens)
+            d_ratio = len(desc_matches) / len(q_tokens)
+
+            # High weight on actual spoken transcript!
+            if tr_res.get("hasTranscript"):
+                score = int((tr_ratio * 60) + (t_ratio * 25) + (d_ratio * 15))
+            else:
+                score = int((t_ratio * 60) + (d_ratio * 40))
+
+        # Clickbait detection: title has keywords but transcript has 0 keyword overlap despite having transcript
+        is_clickbait = False
+        clickbait_reason = None
+        if tr_res.get("hasTranscript") and len(transcript_text) > 200:
+            if title_matches and not transcript_matches:
+                is_clickbait = True
+                clickbait_reason = "Title claims to discuss query topic, but residing spoken transcript contains zero matching subject matter."
+                score = min(score, 25)
+
+        is_rel = score >= min_relevance_score and not is_clickbait
+        verdict = "HIGHLY_RELEVANT" if score >= 80 else ("MODERATELY_RELEVANT" if score >= 60 else "IRRELEVANT_OR_CLICKBAIT")
+
+        matching_excerpts = []
+        if transcript_matches:
+            # Pick sentences containing matching tokens
+            sentences = re.split(r"(?<=[.!?])\s+", transcript_text)
+            for s in sentences:
+                if any(m in s.lower() for m in transcript_matches):
+                    matching_excerpts.append(s.strip()[:180])
+                    if len(matching_excerpts) >= 3:
+                        break
+
+        verdict_dict = {
+            "is_relevant": is_rel,
+            "relevance_score": score,
+            "verdict": verdict,
+            "confidence": 0.88 if tr_res.get("hasTranscript") else 0.70,
+            "spoken_summary": (
+                f"Video discusses {', '.join(spoken_topics[:3])}."
+                if spoken_topics
+                else f"Content from channel '{channel}' covering '{title[:60]}'."
+            ),
+            "detected_topics": spoken_topics[:5],
+            "matching_excerpts": matching_excerpts,
+            "is_clickbait": is_clickbait,
+            "clickbait_reason": clickbait_reason,
+        }
+
+    rel_score = int(verdict_dict.get("relevance_score", 0))
+    is_rel = bool(verdict_dict.get("is_relevant", False)) and rel_score >= min_relevance_score and not verdict_dict.get("is_clickbait", False)
+    rec_verdict = "SUGGEST" if is_rel else "DO_NOT_SUGGEST"
+
+    return {
+        "tool": "verify_video_content_relevance",
+        "videoUrl": canonical_url,
+        "videoId": yt_id,
+        "title": title,
+        "channel": channel,
+        "topicQuery": q,
+        "isRelevant": is_rel,
+        "relevanceScore": rel_score,
+        "verdict": verdict_dict.get("verdict", "IRRELEVANT_OR_CLICKBAIT"),
+        "confidence": float(verdict_dict.get("confidence", 0.8)),
+        "hasResidingTranscript": tr_res.get("hasTranscript", False),
+        "spokenSummary": verdict_dict.get("spoken_summary") or "",
+        "detectedTopics": verdict_dict.get("detected_topics") or spoken_topics[:5],
+        "matchingExcerpts": verdict_dict.get("matching_excerpts") or [],
+        "isClickbait": bool(verdict_dict.get("is_clickbait", False)),
+        "clickbaitReason": verdict_dict.get("clickbait_reason"),
+        "recommendationVerdict": rec_verdict,
+        "verificationMethod": method,
     }

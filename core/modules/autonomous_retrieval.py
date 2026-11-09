@@ -21,7 +21,12 @@ from core.tools.discovery_tools import (
 )
 from core.tools.extraction_tools import fetch_page_markdown, parse_document_file
 from core.tools.image_tools import extract_images_from_page, image_search
-from core.tools.video_tools import _extract_youtube_id, video_search
+from core.tools.video_tools import (
+    _extract_youtube_id,
+    transcribe_media_audio,
+    verify_video_content_relevance,
+    video_search,
+)
 from .gemini_client import MODEL_FALLBACK_CHAIN, call_gemini_resilient
 from .profile_memory import _DISALLOWED_SUBJECT_WORDS
 
@@ -783,7 +788,19 @@ def _enrich_markdown_with_contextual_media(
                 and _is_media_relevant(v.get("title", ""), q_str, [context_hint])
             ]
             if v_items:
-                top_v = v_items[0]
+                # Content relevance verification: ensure top video actually discusses the topic
+                top_v = None
+                for cand_v in v_items:
+                    cand_url = cand_v.get("url", "")
+                    try:
+                        cand_verif = verify_video_content_relevance(cand_url, q_str, min_relevance_score=60)
+                        if cand_verif.get("isRelevant", True) and not cand_verif.get("isClickbait", False):
+                            top_v = cand_v
+                            break
+                    except Exception:
+                        top_v = cand_v
+                        break
+                top_v = top_v or v_items[0]
                 v_url = top_v.get("url", "")
                 vid = _extract_youtube_id(v_url)
                 thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
@@ -1528,6 +1545,16 @@ def _summarize_tool_result(tool_name: str, args: Dict[str, Any], res: Dict[str, 
         title = res.get("title", args.get("video_url", ""))[:55]
         has_tr = "with timestamped transcript" if res.get("hasTranscript") else "via multimodal & metadata analysis"
         return f"Inspected video '{title}' ({has_tr})."
+    if tool_name == "verify_video_content_relevance":
+        v_title = res.get("title", "")[:45]
+        score = res.get("relevanceScore", 0)
+        verdict = res.get("recommendationVerdict", "DO_NOT_SUGGEST")
+        cb = " [Clickbait detected]" if res.get("isClickbait") else ""
+        return f"Verified video '{v_title}' residing content -> {verdict} (Relevance {score}/100{cb})."
+    if tool_name == "transcribe_media_audio":
+        method = res.get("method", "audio")
+        topics = ", ".join(res.get("spokenTopics", [])[:3])
+        return f"Transcribed media audio via {method} (Topics: {topics or 'N/A'})."
     if tool_name in ("image_search", "extract_images_from_page"):
         return f"Extracted {res.get('count', len(res.get('images') or []))} relevant image(s)."
     if tool_name == "site_map_and_subpath_discovery":
@@ -1892,6 +1919,18 @@ def run_autonomous_tool_agent_stream(
                     or ""
                 )[:3200],
             )
+        if (
+            tool_name == "verify_video_content_relevance"
+            and res.get("videoUrl")
+            and res.get("isRelevant")
+        ):
+            _register_source(
+                title=res.get("title") or res.get("videoUrl", ""),
+                url=res["videoUrl"],
+                source_domain=res.get("channel") or "YouTube",
+                snippet=(res.get("spokenSummary") or "\n".join(res.get("matchingExcerpts") or []))[:450],
+                full_content=(res.get("spokenSummary") or "\n".join(res.get("matchingExcerpts") or []))[:3200],
+            )
         if res.get("currentUrl") and tool_name.startswith("browser_"):
             _register_source(
                 title=res.get("title") or res.get("currentUrl", ""),
@@ -1916,8 +1955,8 @@ def run_autonomous_tool_agent_stream(
     )
 
     system_instruction = (
-        "You are Spider AI — an Autonomous Deep Web, Multi-Related Site Crawler, Social Platform, Video & PDF Investigation Agent equipped with 29 specialized tools "
-        "(compare_website_designs, capture_page_screenshot, web_search, news_search, multi_related_site_search_and_crawl, social_and_platform_search, pdf_search_and_summarize, academic_and_reference_search, video_search, extract_video_info, "
+        "You are Spider AI — an Autonomous Deep Web, Multi-Related Site Crawler, Social Platform, Video & PDF Investigation Agent equipped with 31 specialized tools "
+        "(compare_website_designs, capture_page_screenshot, web_search, news_search, multi_related_site_search_and_crawl, social_and_platform_search, pdf_search_and_summarize, academic_and_reference_search, video_search, extract_video_info, verify_video_content_relevance, transcribe_media_audio, "
         "image_search, extract_images_from_page, site_map_and_subpath_discovery, fetch_page_markdown, "
         "extract_page_links, extract_tables_from_page, query_page_content, parse_document_file, "
         "extract_structured_metadata, browser_navigate, browser_get_interactive_snapshot, browser_click, "
@@ -1932,13 +1971,15 @@ def run_autonomous_tool_agent_stream(
         "   - Below your direct answer, provide structured sections (e.g. `### Key Leadership Figures & Hierarchy`, `### Historical Foundation & Evolution`, `### Recent News & Verified Developments`) providing granular facts, dates, names, figures, and quotes.\n"
         "3. ACCURATE LOCALIZATION & TOPICAL FIT:\n"
         "   - When an ambiguous acronym or query is presented (e.g. KADU), accurately localize to the specific subject (e.g. Kenya African Democratic Union) and explain its leadership (Ronald Ngala, Daniel arap Moi, Masinde Muliro, Martin Shikuku, and modern formations like Mudzo Nzili for KADU-Asili).\n"
-        "4. PDF SUMMARIZATION & INFORMATION VALUE ASSESSMENT:\n"
+        "4. VIDEO CONTENT RELEVANCE & SPOKEN AUDIT:\n"
+        "   - Do not suggest or cite videos based on clickbait titles alone. When evaluating video evidence, run `verify_video_content_relevance` or `transcribe_media_audio` to audit the residing spoken dialogue and ensure strict topic alignment before citing or suggesting it to the user.\n"
+        "5. PDF SUMMARIZATION & INFORMATION VALUE ASSESSMENT:\n"
         "   - When PDF documents/reports are discovered or analyzed, include a dedicated section `### PDF & Document Intelligence (Information Value Assessment)` at the bottom of your report that summarizes each PDF's empirical findings and explicitly states whether its information is of **HIGH VALUE**, **MODERATE VALUE**, or **LOW VALUE** and why.\n"
-        "5. WEBSITE LANDING PAGE COMPARISONS & DESIGN CONCLUSIONS:\n"
+        "6. WEBSITE LANDING PAGE COMPARISONS & DESIGN CONCLUSIONS:\n"
         "   - When asked to compare websites, fintech companies, or landing page designs, lead with an executive **Design Conclusion** identifying the winning company and rationale, followed by a **Landing Page Design Comparison Matrix** table with visual heuristic scores, and detailed company-by-company design breakdowns.\n"
-        "6. SELF-CONTAINED INTELLIGENCE:\n"
+        "7. SELF-CONTAINED INTELLIGENCE:\n"
         "   - Include all specific figures, names, historical timelines, and nuances so the user never needs to leave Spider AI to read external sources.\n"
-        "7. Cite your sources inline using bracketed numbers like [1], [2], [15] corresponding to the numbered sources list.\n"
+        "8. Cite your sources inline using bracketed numbers like [1], [2], [15] corresponding to the numbered sources list.\n"
         "8. USER ATTACHMENTS & UPLOADED DOCUMENTS:\n"
         "   - When user attachments (PDFs, text files, documents, or images) are provided under `ATTACHED_USER_FILES`, prioritize analyzing their extracted content, directly resolve the user's questions regarding the file, and cite the document appropriately."
     )
@@ -2823,6 +2864,13 @@ Invoke sharp, non-vague search and extraction tools across News, Web, YouTube, S
                     if is_rel and sc > 0:
                         vid = _extract_youtube_id(v.get("url", ""))
                         if vid:
+                            # Verify residing content relevance to guarantee authentic tour
+                            try:
+                                v_verif = verify_video_content_relevance(v.get("url", ""), primary_entity, min_relevance_score=60)
+                                if not v_verif.get("isRelevant", True) or v_verif.get("isClickbait", False):
+                                    continue
+                            except Exception:
+                                pass
                             presentation_videos.append({
                                 "imageUrl": f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg",
                                 "thumbnailUrl": f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg",

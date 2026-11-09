@@ -1,0 +1,43 @@
+# Git & Version Control
+.git/
+.gitignore
+
+# Environment files & Secrets
+.env
+.env.*
+*.env
+*.key
+*.pem
+
+# Python Virtual Environments & Bytecode
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Databases & Runtime State
+db.sqlite3
+db.sqlite3-journal
+media/
+media/uploads/
+core/cache/
+staticfiles/
+
+# Logs & Temporary files
+*.log
+*.tmp
+*.bak
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation source markdown files not needed in container runtime
+docs/
+scratch/
+.DS_Store
+.idea/
+.vscode/

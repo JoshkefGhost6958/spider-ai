@@ -1,0 +1,50 @@
+# Python & Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment Variables & Secrets (CRITICAL FOR PUBLIC REPOS)
+.env
+.env.*
+!.env.example
+*.env
+*.key
+*.pem
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# Databases & Local Storage
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+db.sqlite3-journal
+
+# Media & Uploads (runtime generated)
+media/
+media/uploads/
+core/cache/
+staticfiles/
+
+# Logs & Temporary files
+*.log
+*.tmp
+*.bak
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS Artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

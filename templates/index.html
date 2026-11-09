@@ -2549,6 +2549,45 @@
       vertical-align: middle;
     }
 
+    /* Live Seating & Booking Portal Hand-Off Bar */
+    .stadium-portal-action-bar {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stadium-portal-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .stadium-portal-launch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+    .stadium-portal-launch-btn:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+      color: #ffffff;
+    }
+
     /* Epistemic Verification Shield & Drawer */
     .epistemic-badge-card {
       background: rgba(16, 185, 129, 0.08);
@@ -4577,8 +4616,9 @@
       URL.revokeObjectURL(url);
     }
 
-    function buildStadiumMapHtml(stadiumName, matchTitle, tiers) {
+    function buildStadiumMapHtml(stadiumName, matchTitle, tiers, portalUrl) {
       const cardId = "stadium_map_" + Math.random().toString(36).substring(2, 9);
+      portalUrl = (portalUrl || "https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats").trim();
       if (!Array.isArray(tiers) || tiers.length === 0) {
         tiers = [
           { id: "vvip", name: "West Stand VVIP Skybox & Lounge", price: "KSh 80,000", available: 196, color: "#a855f7", stand: "West Stand", perks: "Private lounge, fine dining, priority tunnel access" },
@@ -4695,6 +4735,22 @@
               ${rowsHtml}
             </tbody>
           </table>
+
+          <div class="stadium-portal-action-bar">
+            <div class="stadium-portal-info">
+              <div style="font-weight:700;color:var(--text-primary);font-size:13px;display:flex;align-items:center;gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Live Interactive Seat Selector & Turnstile Checkout</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);">
+                Open the official ticketing portal in your browser to select individual seats and pay via M-Pesa.
+              </div>
+            </div>
+            <a href="${escapeHtml(portalUrl)}" target="_blank" rel="noopener noreferrer" class="stadium-portal-launch-btn" title="Open official live seating portal in new tab">
+              <span>Open Live Seat Selector</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+          </div>
         </div>
       `;
     }
@@ -4832,11 +4888,19 @@
         const stadiumName = (parts[0] || "Raila Odinga International Stadium (Talanta Sports City)").trim();
         const matchTitle = (parts[1] || "Official Visual Seating Plan").trim();
         let tiers = [];
-        try {
-          const rawTiers = parts.slice(2).join("||");
-          tiers = JSON.parse(rawTiers || "[]");
-        } catch(e) {}
-        const stadiumHtml = buildStadiumMapHtml(stadiumName, matchTitle, tiers);
+        let portalUrl = "https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats";
+        if (parts.length >= 4) {
+          try {
+            tiers = JSON.parse(parts[2] || "[]");
+          } catch(e) {}
+          portalUrl = (parts[3] || portalUrl).trim();
+        } else {
+          try {
+            const rawTiers = parts.slice(2).join("||");
+            tiers = JSON.parse(rawTiers || "[]");
+          } catch(e) {}
+        }
+        const stadiumHtml = buildStadiumMapHtml(stadiumName, matchTitle, tiers, portalUrl);
         const token = `@@INLINESTADIUMMAP${mediaBlocks.length}@@`;
         mediaBlocks.push(stadiumHtml);
         return token;

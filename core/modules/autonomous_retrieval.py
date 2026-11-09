@@ -2619,9 +2619,10 @@ Invoke sharp, non-vague search and extraction tools across News, Web, YouTube, S
             "     * Platinum Hospitality Package (Level 2 Main West Stand along halfway line with lounge hospitality).\n"
             "     * Private Skyboxes (Level 2 Corporate Hospitality Suites).\n"
             "   - NEVER adopt speculative blog tier names (e.g. fabricated 'Regular KSh 10,000', 'Business KSh 22,000', 'VIP KSh 35,000', 'VVIP KSh 80,000') from third-party gossip blogs or unofficial news re-publishers.\n"
-            "11. STADIUM VISUAL SEATING PLAN:\n"
+            "11. STADIUM VISUAL SEATING PLAN & USER-DRIVEN TICKETING HAND-OFF:\n"
             "   - When visual seating plan or layout is requested, clearly detail the physical 3-tier bowl structure (Level 1, Level 2, Level 3) and its cardinal stands (North Stand, South Stand, East Stand, West Stand).\n"
-            "   - Explicitly note that interactive seat selection is conducted block-by-block on the official ticketing portal (talantasportscity.com) with M-Pesa checkout."
+            "   - Explicitly note that interactive seat selection is conducted block-by-block on the official ticketing portal (talantasportscity.com) with M-Pesa checkout.\n"
+            "   - Provide an explicit direct gateway callout for user-driven hand-off: [Open Live Seat Selector on Official Portal (talantasportscity.com)](https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats) so the user can inspect live block zoom and complete ticketing directly in their browser session without automated bot queues."
         )
         if memory_context:
             synth_prompt = f"{synth_prompt}\n\n{memory_context}"

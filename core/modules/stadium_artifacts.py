@@ -124,11 +124,12 @@ def generate_stadium_map_token(
     stadium_name: str = "Raila Odinga International Stadium (Talanta Sports City)",
     match_title: str = "Bayern Munich vs Ajax — Official Visual Seating Plan",
     tiers: Optional[List[Dict[str, Any]]] = None,
+    portal_url: str = "https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats",
 ) -> str:
     """
     Serializes stadium parameters into the inlined token:
-    [[INLINE_STADIUM_MAP:stadium_name||match_title||tiers_json]]
+    [[INLINE_STADIUM_MAP:stadium_name||match_title||tiers_json||portal_url]]
     """
     tiers = tiers or TALANTA_BAYERN_AJAX_TIERS
     tiers_json = json.dumps(tiers)
-    return f"[[INLINE_STADIUM_MAP:{stadium_name}||{match_title}||{tiers_json}]]"
+    return f"[[INLINE_STADIUM_MAP:{stadium_name}||{match_title}||{tiers_json}||{portal_url}]]"

@@ -4509,8 +4509,10 @@
     }
 
     function appendClarificationAndSubmit(baseQuery, clarification) {
-      const combined = `${baseQuery} — ${clarification}`;
-      runAgentQuery(combined);
+      const qLower = (baseQuery || "").toLowerCase().trim();
+      const isMetaOrHelp = /^(?:what\s+can\s+you\s+do|what\s+are\s+your\s+capabilities|who\s+are\s+you|help|guide|capabilities|features)\b/i.test(qLower);
+      const queryToRun = isMetaOrHelp ? clarification : `${baseQuery} — ${clarification}`;
+      runAgentQuery(queryToRun);
     }
 
     async function handleSearchSubmit(event) {

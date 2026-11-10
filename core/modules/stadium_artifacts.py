@@ -115,8 +115,8 @@ def detect_stadium_plan_intent(query: str, answer_markdown: str) -> bool:
     sitting tiers, unbooked seats, or venue maps.
     """
     combined = (query + " " + answer_markdown).lower()
-    has_venue = any(k in combined for k in ["talanta", "stadium", "sitting plan", "seating plan", "arena", "seating map"])
-    has_seat_intent = any(k in combined for k in ["seat", "tier", "unbooked", "ticket", "visual plan", "sitting plan", "layout"])
+    has_venue = any(k in combined for k in ["talanta", "stadium", "sitting plan", "seating plan", "arena", "seating map", "atlanta", "venue", "pitch", "raila"])
+    has_seat_intent = any(k in combined for k in ["seat", "tier", "unbooked", "ticket", "visual plan", "sitting plan", "layout", "visual mapping", "map", "booking"])
     return has_venue and has_seat_intent
 
 

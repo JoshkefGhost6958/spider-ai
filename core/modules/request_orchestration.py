@@ -26,6 +26,7 @@ from .stadium_artifacts import (
     detect_stadium_plan_intent,
     generate_stadium_map_token,
 )
+from .entity_disambiguation import disambiguate_query_entities
 
 import re
 
@@ -115,6 +116,12 @@ def stream_user_intent_orchestration(
         detail_prompt = f"Resolved context -> targeting '{anaphora_target}': \"{effective_request[:80]}\"..."
     else:
         detail_prompt = f"Parsing intent, entities, requirements, and constraints for: \"{raw_user_request[:90]}\"..."
+
+    # 1b. Geographic & Entity Disambiguation (e.g. 'Atlanta' -> 'Talanta Sports City, Nairobi')
+    disambiguated_request, disambiguation_notice = disambiguate_query_entities(effective_request)
+    if disambiguation_notice and disambiguated_request != effective_request:
+        repaired_fields.append(f"Disambiguated entity: {disambiguation_notice}")
+        effective_request = disambiguated_request
 
     yield {
         "event": "agent_action",
@@ -393,6 +400,19 @@ def stream_user_intent_orchestration(
         draft_intent["epistemicVerification"] = verification_report
     except Exception as v_err:
         logger.warning(f"Adversarial verification failed: {v_err}")
+
+    # Step 6b: Prepend Location Disambiguation Callout if entity confusion occurred
+    if disambiguation_notice:
+        callout = f"> 📍 **Location Disambiguation**: {disambiguation_notice}\n\n"
+        if answer_markdown.startswith("[[INLINE_VERIFICATION_BADGE:"):
+            badge_end = answer_markdown.find("]]\n\n")
+            if badge_end != -1:
+                insert_idx = badge_end + 4
+                answer_markdown = answer_markdown[:insert_idx] + callout + answer_markdown[insert_idx:]
+            else:
+                answer_markdown = f"{callout}{answer_markdown}"
+        else:
+            answer_markdown = f"{callout}{answer_markdown}"
 
     # Step 7: Interactive Visual Artifact Generation (e.g. Stadium Maps, Venue Seating Plans)
     try:

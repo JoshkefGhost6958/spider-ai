@@ -567,14 +567,15 @@ def _extract_presentation_subject(
     q_str = " ".join(qualifiers)
     base_label = f"{primary_entity} {q_str}".strip()
 
+    clean_primary = re.sub(r"\s*\([^)]*\)", "", primary_entity).replace('"', '').strip() or base_label
     if is_stadium and is_seating_plan:
-        img_q = f'"{primary_entity}" stadium seating plan map layout diagram'
-        img_q_detail = f'"{primary_entity}" Raila Odinga stadium visual seating chart bowl levels'
-        vid_q = f'"{primary_entity}" stadium seating tour virtual walkthrough'
+        img_q = f"{clean_primary} stadium seating plan map layout diagram"
+        img_q_detail = f"{clean_primary} stadium bayern ajax seating map chart"
+        vid_q = f"{clean_primary} stadium seating tour virtual walkthrough"
     elif is_stadium:
-        img_q = f'"{primary_entity}" stadium architectural design exterior bowl'
-        img_q_detail = f'"{primary_entity}" stadium pitch stands interior'
-        vid_q = f'"{primary_entity}" stadium overview walkthrough'
+        img_q = f"{clean_primary} stadium architectural design exterior bowl"
+        img_q_detail = f"{clean_primary} stadium pitch stands interior"
+        vid_q = f"{clean_primary} stadium overview walkthrough"
     elif is_attraction:
         img_q = f"{base_label} building exterior entrance"
         img_q_detail = f"{base_label} exhibits galleries artifacts"
@@ -2174,7 +2175,7 @@ Invoke sharp, non-vague search and extraction tools across News, Web, YouTube, S
                                 break
 
             user_wants_site_imagery = bool(
-                re.search(r"\b(imagery|images?|photos?|pictures?|seat\s+occupation|assignment|screenshots?|visual|sitting\s+plan|seating\s+plan|seating\s+map)\b", user_query, re.I)
+                re.search(r"\b(imagery|images?|photos?|pictures?|seat\s+occupation|assignment|screenshots?|visual|sitting\s+plan|seating\s+plan|seating\s+map|visual\s+mapping)\b", user_query, re.I)
             )
             if target_site_domain:
                 site_url = f"https://www.{target_site_domain}"
@@ -2190,6 +2191,27 @@ Invoke sharp, non-vague search and extraction tools across News, Web, YouTube, S
                 function_calls.insert(
                     0,
                     {"name": "web_search", "args": {"query": site_search_q, "max_results": 6}},
+                )
+
+            # Secondary Web Image Search Fallback:
+            # When visual imagery or seating maps are requested, schedule targeted image_search across indexed
+            # newsrooms and ticketing portals so 2D layout graphics and stadium photography are harvested even if
+            # the official site renders dynamically via protected canvas/SPA.
+            if (
+                user_wants_site_imagery
+                and "image_search" not in existing_fc_names
+                and "image_search" not in temporal_profile.prohibited_tools
+            ):
+                is_seat_map = bool(re.search(r"\b(seat|seating|sitting|stadium|tier|layout|map|visual\s+mapping)\b", user_query, re.I))
+                img_kw = "seating plan layout map visual" if is_seat_map else "official imagery photo"
+                function_calls.append(
+                    {
+                        "name": "image_search",
+                        "args": {
+                            "query": f"{sharp_queries['core']} {img_kw}",
+                            "max_results": 6,
+                        },
+                    }
                 )
 
             # Gate news_search strictly: NEVER call news_search on how-to, tutorials, recipes, coding, or timeless guides

@@ -9,6 +9,7 @@ from core.modules.stadium_artifacts import (
     detect_stadium_plan_intent,
     generate_stadium_map_token,
 )
+from core.modules.entity_disambiguation import disambiguate_query_entities
 from core.tools.live_solution_tools import (
     generate_interactive_venue_map,
     generate_interactive_chart,
@@ -156,3 +157,28 @@ class StadiumVisualizerDetectionTests(SimpleTestCase):
     def test_generate_stadium_map_token(self):
         token = generate_stadium_map_token()
         self.assertTrue(token.startswith("[[INLINE_STADIUM_MAP:Raila Odinga International Stadium"))
+
+    def test_detect_stadium_plan_intent_with_atlanta_typo(self):
+        q = "Which seats are available at Atlanta for Bayern vs ajax match show visual mapping"
+        ans = "The Raila Odinga International Stadium in Nairobi has three active tiers."
+        self.assertTrue(detect_stadium_plan_intent(q, ans))
+
+    def test_disambiguate_query_entities_atlanta(self):
+        q = "Which seats are available at Atlanta for Bayern vs ajax match show visual mapping"
+        corrected, notice = disambiguate_query_entities(q)
+        self.assertIn("Talanta Sports City Nairobi", corrected)
+        self.assertIsNotNone(notice)
+        self.assertIn("Raila Odinga International Stadium", notice)
+        self.assertIn("not Atlanta, Georgia, USA", notice)
+
+    def test_disambiguate_query_entities_kasarani(self):
+        q = "How to get tickets for Kasarani stadium football match"
+        corrected, notice = disambiguate_query_entities(q)
+        self.assertIn("Moi International Sports Centre", corrected)
+        self.assertIsNotNone(notice)
+
+    def test_disambiguate_query_entities_negative(self):
+        q = "Who is the mayor of Atlanta Georgia"
+        corrected, notice = disambiguate_query_entities(q)
+        self.assertEqual(corrected, q)
+        self.assertIsNone(notice)

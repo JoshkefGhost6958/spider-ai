@@ -3300,6 +3300,8 @@
         }).join("") + `</div>`;
       }
 
+      const exportTrayHtml = buildContextualExportTrayHtml(turn.query, turn.answerMarkdown, turn.userIntent);
+
       turnEl.innerHTML = `
         <div class="user-query-bubble">
           ${attachmentsHtml}
@@ -3307,20 +3309,7 @@
         </div>
         <div class="assistant-response">
           ${renderedHtml}
-          <div class="dossier-export-tray">
-            <button type="button" class="dossier-btn" onclick="printDossier(this)" title="Print or save as PDF">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              <span>Print / PDF Dossier</span>
-            </button>
-            <button type="button" class="dossier-btn" onclick="copyResponseMarkdown(this)" title="Copy Markdown to clipboard">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              <span>Copy Markdown</span>
-            </button>
-            <button type="button" class="dossier-btn" onclick="exportResponseJson(this)" title="Export JSON telemetry">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Export JSON</span>
-            </button>
-          </div>
+          ${exportTrayHtml}
         </div>
       `;
       resultsFeed.appendChild(turnEl);
@@ -4708,6 +4697,66 @@
       URL.revokeObjectURL(url);
     }
 
+    function buildContextualExportTrayHtml(query, answerMarkdown, userIntent) {
+      const qLower = (query || "").toLowerCase();
+      const md = answerMarkdown || "";
+      const isCompound = (typeof currentAgentMode !== "undefined" && currentAgentMode === "compound");
+      const expectedFormat = userIntent?.expectedOutputFormat?.structure || "";
+
+      // 1. Contextual relevance for Print / PDF Dossier:
+      // Show ONLY when user explicitly asks for a dossier, report, PDF, print, whitepaper, document,
+      // or when the response is an explicitly titled/structured intelligence dossier or deep research report.
+      const queryExplicitPdfDossier = /\b(dossier|pdf|report|formal\s+brief|whitepaper|export\s+(?:to\s+)?pdf|print|download\s+(?:as\s+)?pdf|document|briefing|summary\s+for\s+stakeholders)\b/i.test(qLower);
+      const isExplicitDossierTitle = /^(?:#+\s*(?:Research\s+Dossier|Intelligence\s+Brief|Executive\s+Dossier|Comprehensive\s+Audit|Due\s+Diligence\s+Report)\b)/im.test(md.slice(0, 350));
+      const isSubstantialCompoundDossier = (isCompound && md.length > 2500 && (md.match(/^###?\s+/gm) || []).length >= 4);
+
+      const showPdfDossier = queryExplicitPdfDossier || isExplicitDossierTitle || isSubstantialCompoundDossier;
+
+      // 2. Contextual relevance for Export JSON:
+      // Show ONLY when user explicitly requests JSON, dataset, telemetry, API output, or schema.
+      const queryExplicitJson = /\b(json|export\s+(?:as\s+|to\s+)?json|api\s+payload|raw\s+data|dataset|telemetry|schema|data\s+format)\b/i.test(qLower) || expectedFormat === "json";
+
+      // 3. Contextual relevance for Copy Markdown:
+      // Show when user asks for markdown/code/copy or when the answer includes substantial structured content
+      // (tables, code blocks, or an active dossier). Never clutter simple chat answers.
+      const queryExplicitMarkdown = /\b(markdown|md|copy|prompt|raw\s+markdown)\b/i.test(qLower);
+      const showMarkdownCopy = queryExplicitMarkdown || showPdfDossier || queryExplicitJson || md.includes("```") || (md.match(/^\|[^\n]+\|\s*$/gm) || []).length >= 4;
+
+      // If neither dossier nor json export is relevant, AND user didn't ask for markdown, do NOT render the tray!
+      if (!showPdfDossier && !queryExplicitJson && !queryExplicitMarkdown) {
+        return "";
+      }
+
+      let buttons = "";
+      if (showPdfDossier) {
+        buttons += `
+          <button type="button" class="dossier-btn" onclick="printDossier(this)" title="Print or save dossier as PDF">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>Print / PDF Dossier</span>
+          </button>
+        `;
+      }
+      if (showMarkdownCopy) {
+        buttons += `
+          <button type="button" class="dossier-btn" onclick="copyResponseMarkdown(this)" title="Copy Markdown to clipboard">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Markdown</span>
+          </button>
+        `;
+      }
+      if (queryExplicitJson) {
+        buttons += `
+          <button type="button" class="dossier-btn" onclick="exportResponseJson(this)" title="Export JSON payload">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Export JSON</span>
+          </button>
+        `;
+      }
+
+      if (!buttons) return "";
+      return `<div class="dossier-export-tray">${buttons}</div>`;
+    }
+
     function buildStadiumMapHtml(stadiumName, matchTitle, tiers, portalUrl) {
       const cardId = "stadium_map_" + Math.random().toString(36).substring(2, 9);
       portalUrl = (portalUrl || "https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats").trim();
@@ -5876,6 +5925,7 @@
                 answerMarkdown: payload.answerMarkdown || "",
                 sources: sources || [],
                 images: images || [],
+                userIntent: ui || {},
                 timestamp: Date.now()
               });
               saveCurrentThread();
@@ -5975,22 +6025,10 @@
                 let tailHtml = "";
                 if (clarificationHtml) tailHtml += clarificationHtml;
                 if (sourcesHtml) tailHtml += sourcesHtml;
-                tailHtml += `
-                  <div class="dossier-export-tray">
-                    <button type="button" class="dossier-btn" onclick="printDossier(this)" title="Print or save as PDF">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                      <span>Print / PDF Dossier</span>
-                    </button>
-                    <button type="button" class="dossier-btn" onclick="copyResponseMarkdown(this)" title="Copy Markdown to clipboard">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                      <span>Copy Markdown</span>
-                    </button>
-                    <button type="button" class="dossier-btn" onclick="exportResponseJson(this)" title="Export JSON telemetry">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                      <span>Export JSON</span>
-                    </button>
-                  </div>
-                `;
+                const exportTrayHtml = buildContextualExportTrayHtml(query, payload.answerMarkdown, ui);
+                if (exportTrayHtml) {
+                  tailHtml += exportTrayHtml;
+                }
                 if (tailHtml) {
                   answerEl.insertAdjacentHTML("beforeend", tailHtml);
                 }

@@ -11,7 +11,15 @@ from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import ConversationThread, AgentProfileMemory
+from .models import ConversationThread, AgentProfileMemory, SiteWatchTarget, SiteNotificationAlert
+from .tools.site_monitoring_tools import (
+    create_site_watch_target,
+    poll_active_site_monitors,
+    list_site_notification_alerts,
+    mark_notifications_as_read,
+    monitor_site_health_and_uptime,
+    track_page_changes_and_diff,
+)
 from .modules.gemini_client import call_gemini_resilient
 from .modules.request_orchestration import stream_user_intent_orchestration
 
@@ -23,8 +31,41 @@ def landing_page(request):
     context = {
         "is_authenticated": request.user.is_authenticated,
         "username": request.user.username if request.user.is_authenticated else "",
+        "initial_session_id": "",
+        "initial_thread_title": "",
+        "initial_thread_turns_json": "[]",
+        "has_initial_thread": False,
     }
     resp = render(request, "index.html", context)
+    resp["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return resp
+
+
+def chat_thread_page(request, session_id):
+    """
+    Renders the chat interface pre-hydrated for a specific session_id.
+    Enables instant browser reloads, bookmarking, and link sharing for active and historical chats.
+    """
+    clean_id = (session_id or "").strip()
+    thread = None
+    if request.user.is_authenticated:
+        thread = ConversationThread.objects.filter(session_id=clean_id, user=request.user).first()
+    if not thread:
+        thread = ConversationThread.objects.filter(session_id=clean_id).first()
+
+    turns = thread.turns if thread else []
+    title = thread.title if thread else ""
+
+    context = {
+        "is_authenticated": request.user.is_authenticated,
+        "username": request.user.username if request.user.is_authenticated else "",
+        "initial_session_id": clean_id,
+        "initial_thread_title": title,
+        "initial_thread_turns_json": json.dumps(turns),
+        "has_initial_thread": bool(turns),
+    }
+    resp = render(request, "chats.html", context)
     resp["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return resp
@@ -526,10 +567,13 @@ def api_auth_register(request):
         body = json.loads(request.body.decode("utf-8"))
         username = (body.get("username") or "").strip()
         password = (body.get("password") or "").strip()
+        password_confirm = (body.get("password_confirm") or "").strip()
         if not username or not password:
             return JsonResponse({"error": "Username and password required."}, status=400)
         if len(password) < 4:
             return JsonResponse({"error": "Password must be at least 4 characters."}, status=400)
+        if password_confirm and password != password_confirm:
+            return JsonResponse({"error": "Passwords do not match."}, status=400)
 
         if User.objects.filter(username=username).exists():
             return JsonResponse({"error": "Username already taken."}, status=400)
@@ -563,3 +607,118 @@ def api_auth_status(request):
         },
         status=200,
     )
+
+
+# ==============================================================================
+# Site Monitoring & Notification Endpoints
+# ==============================================================================
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_monitors_list(request):
+    """Returns all active site monitoring targets."""
+    try:
+        session_id = request.headers.get("X-Session-ID") or request.GET.get("sessionId") or ""
+        qs = SiteWatchTarget.objects.filter(is_active=True)
+        if request.user.is_authenticated:
+            qs = qs.filter(user=request.user)
+        elif session_id:
+            qs = qs.filter(session_id=session_id)
+
+        targets = [
+            {
+                "id": t.id,
+                "url": t.url,
+                "label": t.label,
+                "watchType": t.watch_type,
+                "keyword": t.keyword,
+                "lastStatusCode": t.last_status_code,
+                "lastLatencyMs": t.last_latency_ms,
+                "lastTitle": t.last_title,
+                "lastCheckedAt": t.last_checked_at.isoformat() if t.last_checked_at else None,
+            }
+            for t in qs[:50]
+        ]
+        return JsonResponse({"status": "ok", "monitors": targets}, status=200)
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_monitor_create(request):
+    """Creates a new monitored site target and runs initial probe."""
+    try:
+        body = json.loads(request.body.decode("utf-8")) if request.body else {}
+        url = (body.get("url") or "").strip()
+        if not url:
+            return JsonResponse({"error": "Missing url parameter."}, status=400)
+
+        session_id = request.headers.get("X-Session-ID") or body.get("sessionId") or ""
+        label = (body.get("label") or "").strip()
+        watch_type = body.get("watchType") or "health_and_content"
+        keyword = body.get("keyword") or ""
+
+        result = create_site_watch_target(
+            url=url,
+            label=label or None,
+            watch_type=watch_type,
+            keyword=keyword or None,
+            session_id=session_id,
+            user=request.user if request.user.is_authenticated else None,
+        )
+        return JsonResponse(result, status=201 if "error" not in result else 400)
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_monitors_poll(request):
+    """Triggers live polling of all registered monitors and emits notifications."""
+    try:
+        session_id = request.headers.get("X-Session-ID") or request.GET.get("sessionId") or ""
+        res = poll_active_site_monitors(
+            session_id=session_id,
+            user=request.user if request.user.is_authenticated else None,
+            force_check=True,
+        )
+        return JsonResponse(res, status=200)
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_notifications_list(request):
+    """Returns alerts for display in the notification bell drawer."""
+    try:
+        session_id = request.headers.get("X-Session-ID") or request.GET.get("sessionId") or ""
+        unread_only = request.GET.get("unreadOnly", "false").lower() == "true"
+        data = list_site_notification_alerts(
+            session_id=session_id,
+            user=request.user if request.user.is_authenticated else None,
+            unread_only=unread_only,
+        )
+        return JsonResponse(data, status=200)
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_notifications_mark_read(request):
+    """Marks alerts as read."""
+    try:
+        body = json.loads(request.body.decode("utf-8")) if request.body else {}
+        alert_ids = body.get("alertIds")
+        session_id = request.headers.get("X-Session-ID") or body.get("sessionId") or ""
+        data = mark_notifications_as_read(
+            alert_ids=alert_ids,
+            session_id=session_id,
+            user=request.user if request.user.is_authenticated else None,
+        )
+        return JsonResponse(data, status=200)
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+

@@ -127,10 +127,17 @@ def classify_and_refine_intents(
             except Exception:
                 pass
         if fb:
-            if is_generic_aspect:
-                raw_subj_name = f"{fb} ({raw_subj_name})"
-            else:
+            is_persona_word = bool(
+                raw_subj_name.lower() in {
+                    "teacher", "tutor", "professor", "instructor", "educator", "coach", "mentor",
+                    "student", "child", "pirate", "roleplay", "persona", "style", "tone", "voice"
+                }
+                or re.search(r"\b(teacher|tutor|professor|instructor|roleplay|persona|pirate)\b", raw_subj_name, re.I)
+            )
+            if is_persona_word or not is_generic_aspect:
                 raw_subj_name = fb
+            else:
+                raw_subj_name = f"{fb} ({raw_subj_name})"
             is_pronoun_or_missing = False
             subj_prov = "contextual"
             adjustments.append(f"Grounded generic or undefined subject using prior session context: '{raw_subj_name}'")

@@ -41,6 +41,19 @@ Built on **Django 6**, **Google Gemini 2.5/2.0**, and **Playwright**, Spider AI 
 * **Picture-in-Picture & Theater Video Player**: Embedded YouTube video modal with minimization, blur backdrop, and PiP reading mode so you can continue reading answers while watching.
 * **Visual Verification Badges**: Value-density scores, source freshness indicators, and clickable citations `[1]`, `[2]`.
 
+### 📡 Autonomous Site Monitoring & Surveillance Suite
+* **Real-Time Uptime & Latency Probes**: Probes HTTP status, Time-to-First-Byte (TTFB) response times, and full redirect path tracing.
+* **SSL/TLS & Security Auditing**: Real-time certificate validity checking, issuer detection, and days-remaining expiration countdown alongside HTTP security headers audits (`HSTS`, `CSP`, `X-Frame-Options`).
+* **Cryptographic Content Diffing & Hash Tracking**: Computes SHA-256 and MD5 semantic hashes, detects line-by-line unified diffs, flags price/currency modifications (`KSh`, `$`, `EUR`, `£`), and evaluates change severity.
+* **Live Feed & Sitemap Discovery**: Automatically parses XML sitemaps (`/sitemap.xml`), RSS 2.0, and Atom feeds for publication velocity and fresh updates.
+* **DNS Resolution & CDN Edge Detection**: Analyzes dual-stack IPv4/IPv6 records and identifies CDN infrastructure (Cloudflare, Fastly, CloudFront, Vercel).
+* **Database-Backed Watch Targets & Alert Notifications**: Persists monitored targets (`SiteWatchTarget`), auto-evaluates alert criteria, and dispatches real-time alerts (`SiteNotificationAlert`) into the top navbar notification bell drawer.
+
+### 🔐 User Authentication & Persistent Chat Permalinks
+* **Unified Auth & Guest Isolation**: Supports user registration and login with session persistence across devices while guaranteeing ephemeral guests are cleanly purged upon refresh.
+* **Direct `/chat/<id>/` and `/chats/<id>/` Permalinks**: Dedicated route and template hydration allows instant browser reloads, bookmarking, and link sharing without screen flicker or state loss.
+* **Streamlined UI & Compact Epistemic Truth Bar**: Sleek top navbar featuring the notification bell and user profile cluster, paired with a compact single-line (~30px) truth verification bar with expandable epistemic audit trails.
+
 ---
 
 ## 🏛️ Architecture & System Topology
@@ -136,13 +149,18 @@ The application will be live at [http://localhost:8000](http://localhost:8000).
 
 ## 🧪 Automated Testing & Verification
 
-Spider AI includes a comprehensive test suite covering retrieval guardrails, temporal intent classification, upload pipelines, and UI regressions:
+Spider AI includes a comprehensive test suite covering retrieval guardrails, temporal intent classification, upload pipelines, user authentication & chat permalink hydration, and site monitoring diagnostics:
 
 ```bash
-# Run test suite
+# Run full test suite
 python manage.py test core
+
+# Run specific suites
+python manage.py test core.test_site_monitoring_tools
+python manage.py test core.test_auth_and_chat_tracking
+python manage.py test core.test_retrieval_guardrails
 ```
-*All 25 automated unit and regression scenarios are verified and passing.*
+*All 46+ automated unit and integration tests are verified and passing.*
 
 ---
 

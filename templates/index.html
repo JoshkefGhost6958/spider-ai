@@ -2307,6 +2307,159 @@
       color: #f87171;
     }
 
+    /* Top Navbar Auth Cluster */
+    .nav-signin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 13px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .nav-signin-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: rgba(56, 189, 248, 0.6);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+    .nav-user-cluster {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+      padding: 0 12px 0 6px;
+      border-radius: 9999px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+    .nav-user-cluster:hover {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-glass-bright);
+      transform: translateY(-1px);
+    }
+    .nav-user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .nav-notification-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-notification-btn:hover {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-glass-bright);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .nav-notification-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      background: #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
+    }
+
+    /* Auth Modal Tabs */
+    .auth-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: 9px;
+      padding: 3px;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      height: 30px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .auth-tab-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Sidebar Grouping & Meta */
+    .sidebar-date-group {
+      margin-bottom: 12px;
+    }
+    .sidebar-date-group-header {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 6px 8px 3px;
+    }
+    .sidebar-thread-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      gap: 2px;
+    }
+    .sidebar-thread-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* Auth Modal */
     .auth-modal-card {
       width: 360px;
@@ -2678,48 +2831,89 @@
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
     }
 
-    /* Epistemic Verification Shield & Drawer */
+    /* Epistemic Verification Shield & Compact Drawer */
     .epistemic-badge-card {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin: 14px 0 20px 0;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.22);
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin: 8px 0 14px 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 0;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .epistemic-badge-card:hover {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.35);
     }
     .epistemic-badge-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
       user-select: none;
+      min-height: 24px;
     }
     .epistemic-badge-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 700;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
       color: #34d399;
+      flex-wrap: wrap;
+    }
+    .epistemic-title-label {
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
     .epistemic-confidence-pill {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11.5px;
-      font-weight: 800;
+      gap: 3px;
+      padding: 1.5px 7px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
       background: #10b981;
       color: #022c22;
+      line-height: 1.3;
+    }
+    .epistemic-claims-count {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .epistemic-claims-count.contested {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+    .epistemic-inspect-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .epistemic-inspect-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      border-color: rgba(56, 189, 248, 0.4);
     }
     .epistemic-audit-drawer {
       border-top: 1px solid rgba(16, 185, 129, 0.2);
       padding-top: 10px;
-      margin-top: 6px;
+      margin-top: 8px;
       display: none;
       flex-direction: column;
       gap: 8px;
@@ -2732,8 +2926,9 @@
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      padding: 4px 0;
+      padding: 3px 0;
       color: var(--text-primary);
+      font-size: 11.5px;
     }
     .epistemic-claim-item.contested {
       color: #fbbf24;
@@ -2817,6 +3012,29 @@
     </div>
 
     <div class="nav-right-controls">
+      {% if is_authenticated %}
+        <button type="button" class="nav-notification-btn" id="nav-notification-btn" onclick="toggleNotifications(event)" aria-label="Notifications" title="Notifications">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="nav-notification-badge" id="nav-notification-badge"></span>
+        </button>
+
+        <div class="nav-user-cluster" onclick="toggleSidebar(true)" title="Signed in as {{ username }} • Open Menu & Chats">
+          <div class="nav-user-avatar">{{ username|slice:":1"|upper }}</div>
+          <span class="nav-user-name">{{ username }}</span>
+        </div>
+      {% else %}
+        <button type="button" class="nav-signin-btn" onclick="openAuthModal()" title="Sign In or Register">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Sign In</span>
+        </button>
+      {% endif %}
+
       <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark Mode" title="Toggle Theme">
         <svg id="theme-icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -2921,7 +3139,15 @@
         <h3 class="auth-modal-title" id="auth-modal-title">Sign In to Spider AI</h3>
         <button type="button" class="in-app-close-btn" onclick="closeAuthModal()" aria-label="Close">&times;</button>
       </div>
+
+      <!-- Segmented Mode Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthMode('login')">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthMode('register')">Create Account</button>
+      </div>
+
       <p class="auth-modal-sub" id="auth-modal-sub">Organize your chats and access your search history across reloads.</p>
+
       <form id="auth-form" onsubmit="handleAuthSubmit(event)">
         <div class="auth-field-group">
           <label for="auth-username">Username</label>
@@ -2930,6 +3156,10 @@
         <div class="auth-field-group">
           <label for="auth-password">Password</label>
           <input type="password" id="auth-password" required autocomplete="current-password" placeholder="••••••••" />
+        </div>
+        <div class="auth-field-group hidden" id="auth-confirm-group">
+          <label for="auth-password-confirm">Confirm Password</label>
+          <input type="password" id="auth-password-confirm" autocomplete="new-password" placeholder="••••••••" />
         </div>
         <div id="auth-error-msg" class="auth-error-msg hidden"></div>
         <button type="submit" id="auth-submit-btn" class="auth-submit-btn">Sign In</button>
@@ -3101,11 +3331,100 @@
     // =========================================================================
     const IS_AUTHENTICATED = {{ is_authenticated|yesno:"true,false" }};
     const CURRENT_USERNAME = "{{ username|default:'' }}";
+    const INITIAL_SESSION_ID = "{{ initial_session_id|default:''|escapejs }}";
+    const INITIAL_THREAD_TURNS = {{ initial_thread_turns_json|default:"[]"|safe }};
+    const HAS_INITIAL_THREAD = {{ has_initial_thread|yesno:"true,false" }};
     let ACTIVE_SESSION_ID = null;
     window.__activeThreadTurns = [];
 
-    // Session initialization: For guests, ALWAYS generate a fresh session ID on page reload & purge stale memory
-    (function initSessionState() {
+    function formatRelativeTime(isoDateStr) {
+      if (!isoDateStr) return "";
+      const date = new Date(isoDateStr);
+      const now = new Date();
+      const diffSec = Math.floor((now - date) / 1000);
+      if (diffSec < 60) return "Just now";
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHours = Math.floor(diffMin / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays === 1) return "Yesterday";
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    function generateThreadTitle(query) {
+      if (!query) return "New Conversation";
+      let clean = query.trim().replace(/^[\s\W]+|[\s\W]+$/g, "");
+      clean = clean.replace(/^(?:what\s+(?:is|are|was|were)|how\s+(?:many|much|do|does|can)|tell\s+me\s+about|show\s+(?:me\s+)?|who\s+(?:is|was)|give\s+me|find|search\s+for|can\s+you)\s+/i, "");
+      clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+      if (clean.length > 46) {
+        const cut = clean.slice(0, 46);
+        const lastSpace = cut.lastIndexOf(" ");
+        clean = (lastSpace > 24 ? cut.slice(0, lastSpace) : cut) + "...";
+      }
+      return clean || "New Conversation";
+    }
+
+    function groupThreadsByDate(threads) {
+      const groups = [
+        { label: "Today", items: [] },
+        { label: "Yesterday", items: [] },
+        { label: "Previous 7 Days", items: [] },
+        { label: "Older", items: [] }
+      ];
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const startOfYesterday = startOfToday - 86400000;
+      const startOf7Days = startOfToday - 6 * 86400000;
+
+      for (const t of threads) {
+        const tTime = new Date(t.updatedAt).getTime();
+        if (tTime >= startOfToday) {
+          groups[0].items.push(t);
+        } else if (tTime >= startOfYesterday) {
+          groups[1].items.push(t);
+        } else if (tTime >= startOf7Days) {
+          groups[2].items.push(t);
+        } else {
+          groups[3].items.push(t);
+        }
+      }
+      return groups.filter(g => g.items.length > 0);
+    }
+
+    // Session initialization: For guests and users, handles direct URL navigation (/chat/<id>/ or /chats/<id>/) and reloads
+    (async function initSessionState() {
+      // 1. Detect if page is opened with /chat/<id>/ or /chats/<id>/ or pre-hydrated INITIAL_SESSION_ID
+      let targetSessionId = INITIAL_SESSION_ID;
+      if (!targetSessionId) {
+        const pathMatch = window.location.pathname.match(/^\/(?:chat|chats)\/([^\/]+)\/?$/);
+        if (pathMatch) {
+          targetSessionId = decodeURIComponent(pathMatch[1]);
+        }
+      }
+
+      if (targetSessionId) {
+        ACTIVE_SESSION_ID = targetSessionId;
+        window.ACTIVE_SESSION_ID = targetSessionId;
+        if (IS_AUTHENTICATED) {
+          localStorage.setItem("spider_user_session_id", targetSessionId);
+        } else {
+          sessionStorage.setItem("spider_session_id", targetSessionId);
+        }
+
+        refreshThreadsList();
+
+        if (Array.isArray(INITIAL_THREAD_TURNS) && INITIAL_THREAD_TURNS.length > 0) {
+          window.__activeThreadTurns = [...INITIAL_THREAD_TURNS];
+          renderActiveThreadTurns();
+        } else {
+          await loadThread(targetSessionId, false);
+        }
+        return;
+      }
+
+      // 2. Default landing page flow (/)
       if (!IS_AUTHENTICATED) {
         const staleGuestId = sessionStorage.getItem("spider_session_id") || localStorage.getItem("spider_session_id");
         localStorage.removeItem("spider_session_id");
@@ -3129,13 +3448,45 @@
         }
         ACTIVE_SESSION_ID = userSess;
         window.ACTIVE_SESSION_ID = userSess;
+
+        refreshThreadsList();
+
+        // Restore active thread if it exists and has turns
+        try {
+          const resp = await fetch(`/api/threads/${encodeURIComponent(userSess)}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.turns && data.turns.length > 0) {
+              await loadThread(userSess, false);
+            }
+          }
+        } catch (e) {}
       }
     })();
+
+    // Browser navigation (Back / Forward) support
+    window.addEventListener("popstate", (e) => {
+      const match = window.location.pathname.match(/^\/(?:chat|chats)\/([^\/]+)\/?$/);
+      if (match) {
+        const sId = decodeURIComponent(match[1]);
+        if (sId !== window.ACTIVE_SESSION_ID) {
+          loadThread(sId, false);
+        }
+      } else if (window.location.pathname === "/" || window.location.pathname === "") {
+        startNewChat(false);
+      }
+    });
 
     // Sidebar & History Elements
     const spiderSidebar = document.getElementById("spider-sidebar");
     const sidebarBackdrop = document.getElementById("sidebar-backdrop");
     const sidebarThreadsList = document.getElementById("sidebar-threads-list");
+
+    function toggleNotifications(event) {
+      if (event) event.stopPropagation();
+      // Placeholder for future notification system functionality
+      console.log("Notification bell clicked");
+    }
 
     function toggleSidebar(forceState) {
       if (!spiderSidebar) return;
@@ -3168,26 +3519,53 @@
           return;
         }
 
-        sidebarThreadsList.innerHTML = threads.map(t => {
-          const isActive = t.sessionId === window.ACTIVE_SESSION_ID;
-          return `
-            <div class="sidebar-thread-item ${isActive ? "active" : ""}" onclick="loadThread('${escapeHtml(t.sessionId)}')" title="${escapeHtml(t.title)}">
-              <span class="sidebar-thread-title">${escapeHtml(t.title || "Untitled Chat")}</span>
-              <button type="button" class="thread-del-btn" onclick="deleteThread('${escapeHtml(t.sessionId)}', event)" title="Delete chat">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            </div>
-          `;
-        }).join("");
+        const dateGroups = groupThreadsByDate(threads);
+        sidebarThreadsList.innerHTML = dateGroups.map(group => `
+          <div class="sidebar-date-group">
+            <div class="sidebar-date-group-header">${escapeHtml(group.label)}</div>
+            ${group.items.map(t => {
+              const isActive = t.sessionId === window.ACTIVE_SESSION_ID;
+              const metaStr = `${t.turnCount || 1} turn${(t.turnCount || 1) === 1 ? '' : 's'} • ${formatRelativeTime(t.updatedAt)}`;
+              return `
+                <div class="sidebar-thread-item ${isActive ? "active" : ""}" onclick="loadThread('${escapeHtml(t.sessionId)}')" title="${escapeHtml(t.title)}">
+                  <div class="sidebar-thread-content">
+                    <span class="sidebar-thread-title">${escapeHtml(t.title || "Untitled Chat")}</span>
+                    <span class="sidebar-thread-meta">${escapeHtml(metaStr)}</span>
+                  </div>
+                  <button type="button" class="thread-del-btn" onclick="deleteThread('${escapeHtml(t.sessionId)}', event)" title="Delete chat">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `).join("");
       } catch (err) {
         console.warn("Failed to refresh thread history:", err);
       }
     }
 
-    function startNewChat() {
+    function renderActiveThreadTurns() {
+      resultsFeed.innerHTML = "";
+      if (window.__activeThreadTurns && window.__activeThreadTurns.length > 0) {
+        const heroIntro = document.querySelector(".hero-intro");
+        const spiderEmblem = document.querySelector(".hero-spider-emblem");
+        if (spiderEmblem) spiderEmblem.classList.add("crawling-into-bg");
+        if (heroIntro) heroIntro.classList.add("fading-out");
+        pageWrapper.classList.add("chat-active");
+        resultsFeed.classList.remove("hidden");
+
+        for (const turn of window.__activeThreadTurns) {
+          renderSavedTurn(turn);
+        }
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+    }
+
+    function startNewChat(updateUrl = true) {
       if (isAgentRunning) {
         stopAgentQuery();
       }
@@ -3214,6 +3592,10 @@
         ACTIVE_SESSION_ID = freshUserSess;
       }
 
+      if (updateUrl && window.location.pathname !== "/") {
+        window.history.pushState({}, "", "/");
+      }
+
       window.__activeThreadTurns = [];
       resultsFeed.innerHTML = "";
       resultsFeed.classList.add("hidden");
@@ -3237,7 +3619,7 @@
       chatInput.focus();
     }
 
-    async function loadThread(sessionId) {
+    async function loadThread(sessionId, updateUrl = true) {
       if (isAgentRunning) stopAgentQuery();
       try {
         const resp = await fetch(`/api/threads/${encodeURIComponent(sessionId)}/`);
@@ -3248,6 +3630,19 @@
         ACTIVE_SESSION_ID = data.sessionId;
         window.__activeThreadTurns = data.turns || [];
 
+        if (IS_AUTHENTICATED) {
+          localStorage.setItem("spider_user_session_id", data.sessionId);
+        } else {
+          sessionStorage.setItem("spider_session_id", data.sessionId);
+        }
+
+        if (updateUrl) {
+          const targetUrl = `/chat/${encodeURIComponent(data.sessionId)}/`;
+          if (window.location.pathname !== targetUrl) {
+            window.history.pushState({ sessionId: data.sessionId }, "", targetUrl);
+          }
+        }
+
         // Populate prompt history from previous conversation turns
         if (data.turns && Array.isArray(data.turns)) {
           data.turns.forEach(t => {
@@ -3257,22 +3652,7 @@
           });
         }
 
-        resultsFeed.innerHTML = "";
-        if (window.__activeThreadTurns.length > 0) {
-          const heroIntro = document.querySelector(".hero-intro");
-          const spiderEmblem = document.querySelector(".hero-spider-emblem");
-          if (spiderEmblem) spiderEmblem.classList.add("crawling-into-bg");
-          if (heroIntro) heroIntro.classList.add("fading-out");
-          pageWrapper.classList.add("chat-active");
-          resultsFeed.classList.remove("hidden");
-
-          for (const turn of window.__activeThreadTurns) {
-            renderSavedTurn(turn);
-          }
-          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-        } else {
-          startNewChat();
-        }
+        renderActiveThreadTurns();
         toggleSidebar(false);
         refreshThreadsList();
       } catch (err) {
@@ -3332,7 +3712,7 @@
     async function saveCurrentThread() {
       if (!window.__activeThreadTurns || window.__activeThreadTurns.length === 0) return;
       const firstTurn = window.__activeThreadTurns[0];
-      const title = (firstTurn.query || "Conversation").slice(0, 48);
+      const title = generateThreadTitle(firstTurn.query);
       try {
         await fetch("/api/threads/save/", {
           method: "POST",
@@ -3346,6 +3726,13 @@
             turns: window.__activeThreadTurns
           })
         });
+
+        // Ensure browser URL points to active thread permalink
+        const threadUrl = `/chat/${encodeURIComponent(window.ACTIVE_SESSION_ID)}/`;
+        if (window.location.pathname !== threadUrl) {
+          window.history.pushState({ sessionId: window.ACTIVE_SESSION_ID }, "", threadUrl);
+        }
+
         refreshThreadsList();
       } catch (err) {
         console.warn("Failed to save thread:", err);
@@ -3375,23 +3762,36 @@
       if (authModal) authModal.classList.add("hidden");
     }
 
-    function toggleAuthMode() {
+    function switchAuthMode(mode) {
       if (authErrorMsg) authErrorMsg.classList.add("hidden");
-      if (authMode === "login") {
-        authMode = "register";
+      authMode = mode;
+      const tabLogin = document.getElementById("auth-tab-login");
+      const tabReg = document.getElementById("auth-tab-register");
+      const confirmGroup = document.getElementById("auth-confirm-group");
+
+      if (mode === "register") {
+        if (tabLogin) tabLogin.classList.remove("active");
+        if (tabReg) tabReg.classList.add("active");
         if (authModalTitle) authModalTitle.textContent = "Create Spider AI Account";
         if (authModalSub) authModalSub.textContent = "Save and organize your search threads permanently across all devices.";
         if (authSubmitBtn) authSubmitBtn.textContent = "Create Account";
         if (authTogglePrompt) authTogglePrompt.textContent = "Already have an account?";
         if (authToggleBtn) authToggleBtn.textContent = "Sign In";
+        if (confirmGroup) confirmGroup.classList.remove("hidden");
       } else {
-        authMode = "login";
+        if (tabReg) tabReg.classList.remove("active");
+        if (tabLogin) tabLogin.classList.add("active");
         if (authModalTitle) authModalTitle.textContent = "Sign In to Spider AI";
         if (authModalSub) authModalSub.textContent = "Organize your chats and access your search history across reloads.";
         if (authSubmitBtn) authSubmitBtn.textContent = "Sign In";
         if (authTogglePrompt) authTogglePrompt.textContent = "Don't have an account?";
         if (authToggleBtn) authToggleBtn.textContent = "Create one";
+        if (confirmGroup) confirmGroup.classList.add("hidden");
       }
+    }
+
+    function toggleAuthMode() {
+      switchAuthMode(authMode === "login" ? "register" : "login");
     }
 
     async function handleAuthSubmit(event) {
@@ -3399,15 +3799,39 @@
       if (authErrorMsg) authErrorMsg.classList.add("hidden");
       const uInput = document.getElementById("auth-username");
       const pInput = document.getElementById("auth-password");
+      const cInput = document.getElementById("auth-password-confirm");
       const username = uInput ? uInput.value.trim() : "";
       const password = pInput ? pInput.value.trim() : "";
+      const passwordConfirm = cInput ? cInput.value.trim() : "";
+
+      if (authMode === "register") {
+        if (password.length < 4) {
+          if (authErrorMsg) {
+            authErrorMsg.textContent = "Password must be at least 4 characters.";
+            authErrorMsg.classList.remove("hidden");
+          }
+          return;
+        }
+        if (password !== passwordConfirm) {
+          if (authErrorMsg) {
+            authErrorMsg.textContent = "Passwords do not match.";
+            authErrorMsg.classList.remove("hidden");
+          }
+          return;
+        }
+      }
 
       const url = authMode === "login" ? "/api/auth/login/" : "/api/auth/register/";
       try {
+        const payload = { username, password };
+        if (authMode === "register") {
+          payload.password_confirm = passwordConfirm;
+        }
+
         const resp = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify(payload)
         });
         const data = await resp.json();
         if (!resp.ok) {
@@ -3418,17 +3842,19 @@
           return;
         }
 
-        // On successful auth, save current thread turns if any
+        // On successful auth, save current thread turns if any and link to active session
         if (window.__activeThreadTurns && window.__activeThreadTurns.length > 0) {
+          const threadTitle = generateThreadTitle(window.__activeThreadTurns[0].query);
           await fetch("/api/threads/save/", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-Session-ID": window.ACTIVE_SESSION_ID },
             body: JSON.stringify({
               sessionId: window.ACTIVE_SESSION_ID,
-              title: (window.__activeThreadTurns[0].query || "Conversation").slice(0, 48),
+              title: threadTitle,
               turns: window.__activeThreadTurns
             })
           }).catch(() => {});
+          localStorage.setItem("spider_user_session_id", window.ACTIVE_SESSION_ID);
         }
         window.location.reload();
       } catch (err) {
@@ -4905,20 +5331,20 @@
 
       let claimsHtml = "";
       if (verifiedClaims.length > 0) {
-        claimsHtml += `<div style="font-weight:700;color:#34d399;margin-bottom:4px;">Verified Factual Claims:</div>`;
+        claimsHtml += `<div style="font-weight:700;color:#34d399;margin-bottom:4px;font-size:11.5px;">Verified Factual Claims:</div>`;
         claimsHtml += verifiedClaims.map(c => `
           <div class="epistemic-claim-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>${escapeHtml(c)}</span>
           </div>
         `).join("");
       }
 
       if (contestedClaims.length > 0) {
-        claimsHtml += `<div style="font-weight:700;color:#fbbf24;margin-top:8px;margin-bottom:4px;">Contested Claims & Arbitrated Resolutions:</div>`;
+        claimsHtml += `<div style="font-weight:700;color:#fbbf24;margin-top:6px;margin-bottom:4px;font-size:11.5px;">Contested Claims & Arbitrated Resolutions:</div>`;
         claimsHtml += contestedClaims.map(c => `
           <div class="epistemic-claim-item contested">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             <div>
               <strong>Claim:</strong> ${escapeHtml(c.claim || '')}<br>
               <span style="color:var(--text-muted);"><strong>Challenge:</strong> ${escapeHtml(c.challenge || '')}</span><br>
@@ -4929,23 +5355,26 @@
       }
 
       if (authorityDomains.length > 0) {
-        claimsHtml += `<div style="margin-top:8px;color:var(--text-muted);font-size:11px;">Backed by verified primary authorities: ${authorityDomains.map(d => `<span style="color:#38bdf8;">${escapeHtml(d)}</span>`).join(", ")}</div>`;
+        claimsHtml += `<div style="margin-top:6px;color:var(--text-muted);font-size:11px;">Backed by primary authorities: ${authorityDomains.map(d => `<span style="color:#38bdf8;">${escapeHtml(d)}</span>`).join(", ")}</div>`;
       }
 
       const hasAuditDrawer = claimsHtml.trim().length > 0;
       const headerClick = hasAuditDrawer ? `onclick="toggleEpistemicDrawer('${drawerId}', this.querySelector('.audit-toggle-btn'))"` : "";
+      const verifiedCount = verifiedClaims.length;
+      const contestedCount = contestedClaims.length;
 
       return `
-        <div class="epistemic-badge-card">
+        <div class="epistemic-badge-card compact">
           <div class="epistemic-badge-header" ${headerClick}>
             <div class="epistemic-badge-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              <span>Epistemic Truth Verification</span>
-              <span class="epistemic-confidence-pill">${escapeHtml(score)}% ${escapeHtml(verdict)}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span class="epistemic-title-label">Truth Verification</span>
+              <span class="epistemic-confidence-pill">${escapeHtml(score)}% Confidence</span>
+              ${verifiedCount > 0 ? `<span class="epistemic-claims-count">• ${verifiedCount} Verified Claim${verifiedCount > 1 ? 's' : ''}</span>` : ""}
+              ${contestedCount > 0 ? `<span class="epistemic-claims-count contested">• ${contestedCount} Dispute${contestedCount > 1 ? 's' : ''}</span>` : ""}
             </div>
-            ${hasAuditDrawer ? `<button type="button" class="dossier-btn audit-toggle-btn" style="height:24px;padding:0 8px;font-size:11px;">Inspect Audit Trail ▾</button>` : ""}
+            ${hasAuditDrawer ? `<button type="button" class="epistemic-inspect-btn audit-toggle-btn">Inspect Audit Trail ▾</button>` : ""}
           </div>
-          <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(summary)}</div>
           ${hasAuditDrawer ? `<div class="epistemic-audit-drawer" id="${drawerId}">${claimsHtml}</div>` : ""}
         </div>
       `;

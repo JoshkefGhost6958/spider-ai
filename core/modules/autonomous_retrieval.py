@@ -1181,8 +1181,26 @@ def _build_sharp_investigative_queries(
     is_historical_or_political = bool(
         re.search(r"\b(president|minister|politics|political|party|government|parliament|election|history|historical|origin|founded|constitution|leader|colonial|independence)\b", user_query, re.I)
     )
+    is_persona_directive = bool(
+        re.search(
+            r"\b(?:act|talk|speak|teach|explain|behave|write|respond|roleplay)\s+(?:like|as)\s+(?:a|an)\s+[a-z\s-]+|"
+            r"be\s+(?:my|a|an)\s+[a-z\s-]+|"
+            r"explain\s+(?:like\s+i(?:['’]m|\s+am)\s+(?:5|five|a\s+child)|simply)|"
+            r"quiz\s+me|test\s+me|give\s+me\s+practice\s+problems?|"
+            r"simplify\b",
+            user_query,
+            re.I
+        )
+    )
 
-    if is_seating_or_tickets:
+    if is_persona_directive and intent_primary:
+        clean_subj = re.sub(r"\b(act|like|teacher|tutor|professor|pirate)\b", "", intent_primary, flags=re.I).strip() or intent_primary
+        news_q = f"{clean_subj} educational curriculum updates"
+        web_q = f"{clean_subj} core principles definitions equations examples"
+        video_q = f"{clean_subj} physics lecture tutorial Khan Academy"
+        social_q = f"{clean_subj} study notes guide"
+        pdf_q = f"{clean_subj} lecture notes formulas pdf"
+    elif is_seating_or_tickets:
         news_q = f"{base_specific} tickets seats booking announcement"
         web_q = f"{base_specific} tickets seats availability booking portal pricing layout"
         video_q = f"{base_specific} stadium seating tickets tour guide"
@@ -2644,7 +2662,12 @@ Invoke sharp, non-vague search and extraction tools across News, Web, YouTube, S
             "11. STADIUM VISUAL SEATING PLAN & USER-DRIVEN TICKETING HAND-OFF:\n"
             "   - When visual seating plan or layout is requested, clearly detail the physical 3-tier bowl structure (Level 1, Level 2, Level 3) and its cardinal stands (North Stand, South Stand, East Stand, West Stand).\n"
             "   - Explicitly note that interactive seat selection is conducted block-by-block on the official ticketing portal (talantasportscity.com) with M-Pesa checkout.\n"
-            "   - Provide an explicit direct gateway callout for user-driven hand-off: [Open Live Seat Selector on Official Portal (talantasportscity.com)](https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats) so the user can inspect live block zoom and complete ticketing directly in their browser session without automated bot queues."
+            "   - Provide an explicit direct gateway callout for user-driven hand-off: [Open Live Seat Selector on Official Portal (talantasportscity.com)](https://talantasportscity.com/events/fc-bayern-munchen-vs-afc-ajax/seats) so the user can inspect live block zoom and complete ticketing directly in their browser session without automated bot queues.\n"
+            "12. ROLEPLAY, PEDAGOGICAL PERSONA & EXPLANATION CONTINUATION:\n"
+            "   - If the user inquiry or session context directs you to adopt a persona or teaching role (e.g. 'act like a teacher', 'explain like I am 5', 'be my tutor', 'quiz me'):\n"
+            "     * Embody the requested role enthusiastically and directly to teach the active subject of inquiry (e.g. Kinematics, Physics, Coding).\n"
+            "     * DO NOT write about the profession in the abstract (e.g. NEVER write an essay on 'how to be an elementary school teacher' or cite teacher training manuals).\n"
+            "     * Greet the student warmly, introduce the concept with intuitive everyday analogies, break down the core equations/principles step-by-step, walk through a concrete example problem, and conclude with an encouraging check-for-understanding practice question."
         )
         if memory_context:
             synth_prompt = f"{synth_prompt}\n\n{memory_context}"

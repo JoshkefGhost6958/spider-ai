@@ -331,6 +331,53 @@ def stream_user_intent_orchestration(
         }
         return
 
+    # Direct Persona Guidance Handler: Standalone 'act like a teacher' / 'be my tutor' without prior topic
+    from .profile_memory import PERSONA_OR_STYLE_DIRECTIVE, get_or_create_session_memory
+    p_match = PERSONA_OR_STYLE_DIRECTIVE.match(raw_user_request.strip())
+    mem = get_or_create_session_memory(session_id)
+    if p_match and not anaphora_target and not (mem.last_subject or "").strip():
+        persona_label = (p_match.group(1) or p_match.group(2) or "").strip()
+        if not persona_label:
+            persona_label = "teacher" if "teacher" in raw_user_request.lower() else "instructor"
+        module_trace.append(
+            {
+                "moduleName": "Pedagogical Persona Onboarding",
+                "status": "completed",
+                "durationMs": 5,
+                "summary": f"Initialized {persona_label} persona and presented subject curriculum options.",
+            }
+        )
+        yield {
+            "event": "agent_action",
+            "step": 2,
+            "module": "Pedagogical Persona Onboarding",
+            "status": "completed",
+            "durationMs": 5,
+            "detail": f"Activated {persona_label} pedagogical mode: ready to teach any subject step-by-step.",
+        }
+
+        answer_markdown = (
+            f"# 🍎 Welcome to Class!\n\n"
+            f"I would be delighted to act as your **{persona_label}** and guide you step-by-step through any subject or problem!\n\n"
+            f"### What topic would you like to explore today?\n\n"
+            f"- 🚀 **Physics & Mechanics**: Kinematics (displacement, velocity, acceleration), Newton's Laws, Work & Energy, Relativity\n"
+            f"- 📐 **Mathematics & Calculus**: Derivatives, Integrals, Linear Algebra, Statistics & Probability\n"
+            f"- 💻 **Computer Science & Coding**: Algorithms, Data Structures, Python, Systems Architecture\n"
+            f"- 🔬 **Engineering & Electronics**: Circuit Analysis, Robotics, Signal Processing\n"
+            f"- 🌍 **World History & Economics**: Historical Movements, Devolution, Macroeconomic Principles\n\n"
+            f"Tell me what you'd like to learn, or share a specific homework/concept question, and we'll break it down together!"
+        )
+        draft_intent["pipelineMetadata"]["latencyMs"] = int((time.time() - pipeline_start) * 1000)
+        yield {
+            "event": "complete",
+            "answerMarkdown": answer_markdown,
+            "sources": [],
+            "images": [],
+            "userIntent": draft_intent,
+            "attachments": attachments or [],
+        }
+        return
+
     # Step 2+: Autonomous Multi-Turn Tool-Calling Loop
     answer_markdown = ""
     sources: List[Dict[str, str]] = []

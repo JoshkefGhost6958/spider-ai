@@ -35,7 +35,9 @@ _DISALLOWED_SUBJECT_WORDS = {
     "location", "pitch", "event", "winner", "score", "result", "results", "odds",
     "prediction", "predictions", "stats", "statistics", "h2h", "attendance", "coach",
     "manager", "history", "facts", "fact", "updates", "update", "analysis", "report",
-    "step", "steps", "question", "questions", "answer", "answers", "option", "options"
+    "step", "steps", "question", "questions", "answer", "answers", "option", "options",
+    "teacher", "tutor", "professor", "instructor", "educator", "coach", "mentor", "student",
+    "child", "pirate", "roleplay", "persona", "style", "tone", "voice"
 }
 
 # Precise follow-up cues that signal a genuine reference to prior context
@@ -82,6 +84,18 @@ STANDALONE_PRONOUN_QUERY = re.compile(
 ANAPHORA_POSSESSIVE = re.compile(r"\b(its|their|theirs)\b", re.I)
 ANAPHORA_PLURAL_OBJ = re.compile(r"\b(them|these|those)\b", re.I)
 ANAPHORA_SINGULAR_OBJ = re.compile(r"\b(it)\b", re.I)
+
+# Persona, Pedagogical, Roleplay, and Explanatory Directives (e.g. 'act like a teacher', 'explain like I am 5', 'be my tutor')
+PERSONA_OR_STYLE_DIRECTIVE = re.compile(
+    r"^(?:(?:can\s+you\s+|please\s+|now\s+)?(?:"
+    r"(?:act|talk|speak|teach|explain|behave|write|respond|roleplay)\s+(?:like|as)\s+(?:a|an)\s+([a-z\s-]+)|"
+    r"be\s+(?:my|a|an)\s+([a-z\s-]+)|"
+    r"(?:explain|break\s+(?:it\s+)?down)\s+(?:like\s+i(?:['’]m|\s+am)\s+(?:5|five|a\s+child|a\s+beginner)|simply|in\s+simple\s+terms)|"
+    r"(?:quiz\s+me|test\s+me|give\s+me\s+(?:an?\s+)?example|give\s+me\s+practice\s+problems?)(?:\s+on\s+this)?|"
+    r"(?:simplify|make\s+it\s+(?:simpler|easier|accessible))"
+    r"))[\.!\?]?$",
+    re.I,
+)
 
 
 def _clean_domain(url_or_domain: str) -> str:
@@ -272,11 +286,8 @@ def resolve_query_anaphora(
         return clean_query, None
 
     # Construct clean contextual target phrase (handles multi-entity comparisons & matches)
-    if len(active_ents) >= 2 and ("vs" in target.lower() or "and" in target.lower() or target.lower() in active_ents[0].lower()):
-        if " vs " in target.lower():
-            target_phrase = target
-        else:
-            target_phrase = f"{active_ents[0]} and {active_ents[1]}"
+    if len(active_ents) >= 2 and (" vs " in target.lower() or " and " in target.lower()):
+        target_phrase = target
     elif target:
         target_phrase = target
     elif active_ents:
@@ -296,8 +307,10 @@ def resolve_query_anaphora(
     is_explicit_cue = bool(FOLLOWUP_CUES.search(q_lower))
     is_aspect = bool(FOLLOWUP_ASPECTS.search(q_lower))
     is_elliptical = _is_elliptical_modifier(clean_query)
+    persona_match = PERSONA_OR_STYLE_DIRECTIVE.match(clean_query.strip())
+    is_persona = bool(persona_match)
 
-    if len(tokens) >= 5 and not is_standalone_followup and not is_about_phrase and not is_aspect and not is_elliptical:
+    if len(tokens) >= 5 and not is_standalone_followup and not is_about_phrase and not is_aspect and not is_elliptical and not is_persona:
         # Check if the query has explicit lexical overlap with target
         if target.lower() not in q_lower and not any(e.lower() in q_lower for e in active_ents):
             # Self-contained topic: Do not alter query
@@ -307,8 +320,40 @@ def resolve_query_anaphora(
     resolved = clean_query
     matched = False
 
+    # 0. Persona, Pedagogical, Roleplay, and Explanatory Style Follow-ups (e.g. 'act like a teacher', 'explain like I am 5', 'be my tutor')
+    if persona_match:
+        persona_raw = (persona_match.group(1) or persona_match.group(2) or "").strip()
+        q_cl = clean_query.lower()
+        if not persona_raw:
+            if "teacher" in q_cl:
+                persona_raw = "teacher"
+            elif "tutor" in q_cl:
+                persona_raw = "tutor"
+            elif "professor" in q_cl:
+                persona_raw = "professor"
+            elif "pirate" in q_cl:
+                persona_raw = "pirate"
+            elif "5" in q_cl or "five" in q_cl:
+                persona_raw = "patient 5-year-old level tutor"
+            elif "quiz" in q_cl or "practice" in q_cl:
+                persona_raw = "quizmaster and interactive instructor"
+            else:
+                persona_raw = "pedagogical instructor"
+
+        resolved = (
+            f"Teach and explain {target_phrase} step-by-step in the role of a {persona_raw}, "
+            f"using intuitive real-world analogies, foundational concepts, and engaging pedagogical explanations."
+        )
+        matched = True
+        target = target_phrase
+        try:
+            mem.preferences["active_persona"] = persona_raw
+            mem.save(update_fields=["preferences"])
+        except Exception:
+            pass
+
     # 1. Targeted pronoun phrases: "about it", "explain this", "regarding that"
-    if is_about_phrase:
+    elif is_about_phrase:
         def _rep_about(m):
             prep = m.group(1)
             pron = m.group(2).lower()
